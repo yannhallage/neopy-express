@@ -3,54 +3,89 @@ import type { User } from "../models/user.model.js";
 import { prisma } from "../lib/prisma.js";
 import { rethrowPrisma } from "../utils/prismaErrors.js";
 
+const userSelect = {
+  id: true,
+  email: true,
+  telephone: true,
+  nom: true,
+  prenom: true,
+  role: true,
+  maquisId: true,
+  actif: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
 function toDomain(row: {
   id: string;
   email: string;
-  name: string;
-  createdAt: Date;
+  telephone: string | null;
+  nom: string;
+  prenom: string | null;
   role: Role;
+  maquisId: string | null;
+  actif: boolean;
+  createdAt: Date;
+  updatedAt: Date;
 }): User {
   return {
     id: row.id,
     email: row.email,
-    name: row.name,
+    telephone: row.telephone,
+    nom: row.nom,
+    prenom: row.prenom,
     role: row.role,
+    maquisId: row.maquisId,
+    actif: row.actif,
     createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
   };
 }
 
 export const usersRepository = {
   async findAll(): Promise<User[]> {
     const rows = await prisma.user.findMany({
+      select: userSelect,
       orderBy: { createdAt: "desc" },
     });
     return rows.map(toDomain);
   },
 
   async findById(id: string): Promise<User | null> {
-    const row = await prisma.user.findUnique({ where: { id } });
+    const row = await prisma.user.findUnique({
+      where: { id },
+      select: userSelect,
+    });
     return row ? toDomain(row) : null;
   },
 
   async findByEmail(email: string): Promise<User | null> {
     const row = await prisma.user.findUnique({
       where: { email: email.toLowerCase() },
+      select: userSelect,
     });
     return row ? toDomain(row) : null;
   },
 
   async create(data: {
     email: string;
-    name: string;
+    nom: string;
+    prenom?: string | null;
+    telephone?: string | null;
     role?: Role;
+    maquisId?: string | null;
   }): Promise<User> {
     try {
       const row = await prisma.user.create({
         data: {
           email: data.email.toLowerCase(),
-          name: data.name,
+          nom: data.nom,
+          ...(data.prenom !== undefined && { prenom: data.prenom }),
+          ...(data.telephone !== undefined && { telephone: data.telephone }),
           ...(data.role !== undefined ? { role: data.role } : {}),
+          ...(data.maquisId !== undefined && { maquisId: data.maquisId }),
         },
+        select: userSelect,
       });
       return toDomain(row);
     } catch (e) {
@@ -60,16 +95,29 @@ export const usersRepository = {
 
   async update(
     id: string,
-    data: Partial<{ email: string; name: string; role: Role }>,
+    data: Partial<{
+      email: string;
+      nom: string;
+      prenom: string | null;
+      telephone: string | null;
+      role: Role;
+      maquisId: string | null;
+      actif: boolean;
+    }>,
   ): Promise<User> {
     try {
       const row = await prisma.user.update({
         where: { id },
         data: {
           ...(data.email !== undefined && { email: data.email.toLowerCase() }),
-          ...(data.name !== undefined && { name: data.name }),
+          ...(data.nom !== undefined && { nom: data.nom }),
+          ...(data.prenom !== undefined && { prenom: data.prenom }),
+          ...(data.telephone !== undefined && { telephone: data.telephone }),
           ...(data.role !== undefined && { role: data.role }),
+          ...(data.maquisId !== undefined && { maquisId: data.maquisId }),
+          ...(data.actif !== undefined && { actif: data.actif }),
         },
+        select: userSelect,
       });
       return toDomain(row);
     } catch (e) {

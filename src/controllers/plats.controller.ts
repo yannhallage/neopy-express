@@ -1,13 +1,15 @@
 import type { Request, Response } from "express";
-import { etudiantsService } from "../services/etudiants.service.js";
-import type {
-  CreateEtudiantBody,
-  UpdateEtudiantBody,
-} from "../validators/etudiants.validator.js";
+import { platsService } from "../services/plats.service.js";
+import type { CreatePlatBody, UpdatePlatBody } from "../validators/plats.validator.js";
 
-export const etudiantsController = {
-  async list(_req: Request, res: Response): Promise<void> {
-    const data = await etudiantsService.list();
+function maquisIdFromQuery(req: Request): string | undefined {
+  const q = req.query.maquisId;
+  return typeof q === "string" && q.length > 0 ? q : undefined;
+}
+
+export const platsController = {
+  async list(req: Request, res: Response): Promise<void> {
+    const data = await platsService.list(maquisIdFromQuery(req));
     res.json({ success: true, data });
   },
 
@@ -17,13 +19,13 @@ export const etudiantsController = {
       res.status(400).json({ success: false, message: "Identifiant manquant" });
       return;
     }
-    const data = await etudiantsService.getById(id);
+    const data = await platsService.getById(id);
     res.json({ success: true, data });
   },
 
   async create(req: Request, res: Response): Promise<void> {
-    const body = req.body as CreateEtudiantBody;
-    const data = await etudiantsService.create(body);
+    const body = req.body as CreatePlatBody;
+    const data = await platsService.create(body);
     res.status(201).json({ success: true, data });
   },
 
@@ -33,8 +35,8 @@ export const etudiantsController = {
       res.status(400).json({ success: false, message: "Identifiant manquant" });
       return;
     }
-    const body = req.body as UpdateEtudiantBody;
-    const data = await etudiantsService.update(id, body);
+    const body = req.body as UpdatePlatBody;
+    const data = await platsService.update(id, body);
     res.json({ success: true, data });
   },
 
@@ -44,7 +46,7 @@ export const etudiantsController = {
       res.status(400).json({ success: false, message: "Identifiant manquant" });
       return;
     }
-    await etudiantsService.delete(id);
+    await platsService.remove(id);
     res.status(204).send();
   },
 };

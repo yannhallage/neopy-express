@@ -12,22 +12,18 @@ export const usersRouter = Router();
  * @openapi
  * /users:
  *   get:
- *     tags:
- *       - Utilisateurs
+ *     tags: [Utilisateurs]
  *     summary: Lister les utilisateurs
  *     operationId: listUsers
  *     responses:
  *       200:
- *         description: Liste triée par date de création (plus récent en premier)
+ *         description: OK
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/SuccessUserList'
- *       500:
- *         $ref: '#/components/responses/ErreurServeur'
  *   post:
- *     tags:
- *       - Utilisateurs
+ *     tags: [Utilisateurs]
  *     summary: Créer un utilisateur
  *     operationId: createUser
  *     requestBody:
@@ -38,7 +34,6 @@ export const usersRouter = Router();
  *             $ref: '#/components/schemas/CreateUserRequest'
  *     responses:
  *       201:
- *         description: Utilisateur créé
  *         content:
  *           application/json:
  *             schema:
@@ -47,42 +42,32 @@ export const usersRouter = Router();
  *         $ref: '#/components/responses/ErreurValidation'
  *       409:
  *         $ref: '#/components/responses/ErreurConflit'
- *       500:
- *         $ref: '#/components/responses/ErreurServeur'
  * /users/{id}:
  *   get:
- *     tags:
- *       - Utilisateurs
- *     summary: Obtenir un utilisateur par identifiant
+ *     tags: [Utilisateurs]
+ *     summary: Détail utilisateur
  *     operationId: getUserById
  *     parameters:
- *       - name: id
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
  *         schema:
  *           type: string
- *         description: Identifiant CUID de l'utilisateur
  *     responses:
  *       200:
- *         description: Utilisateur trouvé
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/SuccessUser'
- *       400:
- *         $ref: '#/components/responses/ErreurValidation'
  *       404:
  *         $ref: '#/components/responses/ErreurIntrouvable'
- *       500:
- *         $ref: '#/components/responses/ErreurServeur'
  *   patch:
- *     tags:
- *       - Utilisateurs
+ *     tags: [Utilisateurs]
  *     summary: Mettre à jour un utilisateur
  *     operationId: updateUser
  *     parameters:
- *       - name: id
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
  *         schema:
  *           type: string
@@ -94,7 +79,6 @@ export const usersRouter = Router();
  *             $ref: '#/components/schemas/UpdateUserRequest'
  *     responses:
  *       200:
- *         description: Utilisateur mis à jour
  *         content:
  *           application/json:
  *             schema:
@@ -103,30 +87,21 @@ export const usersRouter = Router();
  *         $ref: '#/components/responses/ErreurValidation'
  *       404:
  *         $ref: '#/components/responses/ErreurIntrouvable'
- *       409:
- *         $ref: '#/components/responses/ErreurConflit'
- *       500:
- *         $ref: '#/components/responses/ErreurServeur'
  *   delete:
- *     tags:
- *       - Utilisateurs
+ *     tags: [Utilisateurs]
  *     summary: Supprimer un utilisateur
  *     operationId: deleteUser
  *     parameters:
- *       - name: id
- *         in: path
+ *       - in: path
+ *         name: id
  *         required: true
  *         schema:
  *           type: string
  *     responses:
  *       204:
  *         description: Supprimé
- *       400:
- *         $ref: '#/components/responses/ErreurValidation'
  *       404:
  *         $ref: '#/components/responses/ErreurIntrouvable'
- *       500:
- *         $ref: '#/components/responses/ErreurServeur'
  */
 usersRouter.get("/", asyncHandler(usersController.list));
 usersRouter.get("/:id", asyncHandler(usersController.getById));

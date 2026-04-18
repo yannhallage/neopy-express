@@ -1,13 +1,10 @@
 import type { Request, Response } from "express";
-import { filieresService } from "../services/filieres.service.js";
-import type {
-  CreateFiliereBody,
-  UpdateFiliereBody,
-} from "../validators/filieres.validator.js";
+import { maquisService } from "../services/maquis.service.js";
+import type { CreateMaquisBody, UpdateMaquisBody } from "../validators/maquis.validator.js";
 
-export const filieresController = {
+export const maquisController = {
   async list(_req: Request, res: Response): Promise<void> {
-    const data = await filieresService.list();
+    const data = await maquisService.list();
     res.json({ success: true, data });
   },
 
@@ -17,13 +14,13 @@ export const filieresController = {
       res.status(400).json({ success: false, message: "Identifiant manquant" });
       return;
     }
-    const data = await filieresService.getById(id);
+    const data = await maquisService.getById(id);
     res.json({ success: true, data });
   },
 
   async create(req: Request, res: Response): Promise<void> {
-    const body = req.body as CreateFiliereBody;
-    const data = await filieresService.create(body);
+    const body = req.body as CreateMaquisBody;
+    const data = await maquisService.create(body);
     res.status(201).json({ success: true, data });
   },
 
@@ -33,8 +30,8 @@ export const filieresController = {
       res.status(400).json({ success: false, message: "Identifiant manquant" });
       return;
     }
-    const body = req.body as UpdateFiliereBody;
-    const data = await filieresService.update(id, body);
+    const body = req.body as UpdateMaquisBody;
+    const data = await maquisService.update(id, body);
     res.json({ success: true, data });
   },
 
@@ -44,7 +41,7 @@ export const filieresController = {
       res.status(400).json({ success: false, message: "Identifiant manquant" });
       return;
     }
-    await filieresService.delete(id);
+    await maquisService.remove(id);
     res.status(204).send();
   },
 };

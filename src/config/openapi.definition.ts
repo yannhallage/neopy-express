@@ -4,10 +4,10 @@
 export const openApiDefinition = {
   openapi: "3.0.3",
   info: {
-    title: "Express Backend API",
+    title: "API Maquis & Garba",
     version: "1.0.0",
     description:
-      "Documentation de l’API REST. Les succès utilisent `{ success: true, data?: ... }` ou `{ success: true, message }`. Les erreurs : `{ success: false, message }` ; en développement, une erreur 500 peut inclure `stack`.",
+      "API REST pour utilisateurs, maquis, plats et commandes. Succès : `{ success: true, data?: … }` ou `{ success: true, message }`. Erreurs : `{ success: false, message }`.",
   },
   servers: [
     { url: "/api/v1", description: "API version 1" },
@@ -15,30 +15,167 @@ export const openApiDefinition = {
   ],
   tags: [
     { name: "Système", description: "État du service" },
-    { name: "Utilisateurs", description: "Gestion des utilisateurs" },
-    { name: "Étudiants", description: "Gestion des étudiants" },
-    { name: "Filières", description: "Gestion des filières" },
+    { name: "Utilisateurs", description: "Comptes clients, gérants, admin" },
+    { name: "Maquis", description: "Points de vente" },
+    { name: "Plats", description: "Carte (garba, attiéké, etc.)" },
+    { name: "Commandes", description: "Commandes clients" },
     { name: "Documentation", description: "Spécification machine" },
   ],
   components: {
     schemas: {
       Role: {
         type: "string",
-        enum: ["ADMIN", "PROF", "ETUDIANT"],
-        description: "Rôle applicatif",
+        enum: ["CLIENT", "GERANT", "ADMIN"],
+      },
+      StatutCommande: {
+        type: "string",
+        enum: [
+          "EN_ATTENTE",
+          "EN_PREPARATION",
+          "PRETE",
+          "LIVREE",
+          "ANNULEE",
+        ],
+      },
+      MoyenDePaiement: {
+        type: "string",
+        enum: [
+          "ESPECES",
+          "ORANGE_MONEY",
+          "MTN_MONEY",
+          "MOOV_MONEY",
+          "WAVE",
+          "CARTE_BANCAIRE",
+          "AUTRE",
+        ],
       },
       User: {
         type: "object",
-        required: ["id", "email", "name", "role", "createdAt"],
+        required: [
+          "id",
+          "email",
+          "telephone",
+          "nom",
+          "prenom",
+          "role",
+          "maquisId",
+          "actif",
+          "createdAt",
+          "updatedAt",
+        ],
         properties: {
-          id: { type: "string", example: "clxyz123" },
+          id: { type: "string" },
           email: { type: "string", format: "email" },
-          name: { type: "string", maxLength: 120 },
+          telephone: { type: "string", nullable: true },
+          nom: { type: "string" },
+          prenom: { type: "string", nullable: true },
           role: { $ref: "#/components/schemas/Role" },
-          createdAt: {
-            type: "string",
-            format: "date-time",
-            description: "Date de création (ISO 8601)",
+          maquisId: { type: "string", nullable: true },
+          actif: { type: "boolean" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        },
+      },
+      Maquis: {
+        type: "object",
+        required: [
+          "id",
+          "nom",
+          "description",
+          "adresse",
+          "ville",
+          "telephone",
+          "imageUrl",
+          "ouvert",
+          "proprietaireId",
+          "createdAt",
+          "updatedAt",
+        ],
+        properties: {
+          id: { type: "string" },
+          nom: { type: "string" },
+          description: { type: "string", nullable: true },
+          adresse: { type: "string" },
+          ville: { type: "string", nullable: true },
+          telephone: { type: "string", nullable: true },
+          imageUrl: { type: "string", nullable: true },
+          ouvert: { type: "boolean" },
+          proprietaireId: { type: "string" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        },
+      },
+      Plat: {
+        type: "object",
+        required: [
+          "id",
+          "maquisId",
+          "nom",
+          "description",
+          "prix",
+          "imageUrl",
+          "disponible",
+          "createdAt",
+          "updatedAt",
+        ],
+        properties: {
+          id: { type: "string" },
+          maquisId: { type: "string" },
+          nom: { type: "string" },
+          description: { type: "string", nullable: true },
+          prix: { type: "string", description: "Montant décimal (chaîne)" },
+          imageUrl: { type: "string", nullable: true },
+          disponible: { type: "boolean" },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+        },
+      },
+      LigneCommande: {
+        type: "object",
+        required: ["id", "platId", "quantite", "prixUnitaire"],
+        properties: {
+          id: { type: "string" },
+          platId: { type: "string" },
+          quantite: { type: "integer" },
+          prixUnitaire: { type: "string" },
+          plat: {
+            type: "object",
+            nullable: true,
+            properties: {
+              id: { type: "string" },
+              nom: { type: "string" },
+              maquisId: { type: "string" },
+            },
+          },
+        },
+      },
+      Commande: {
+        type: "object",
+        required: [
+          "id",
+          "userId",
+          "maquisId",
+          "statut",
+          "moyenPaiement",
+          "montantTotal",
+          "commentaire",
+          "createdAt",
+          "updatedAt",
+          "lignes",
+        ],
+        properties: {
+          id: { type: "string" },
+          userId: { type: "string" },
+          maquisId: { type: "string" },
+          statut: { $ref: "#/components/schemas/StatutCommande" },
+          moyenPaiement: { $ref: "#/components/schemas/MoyenDePaiement" },
+          montantTotal: { type: "string" },
+          commentaire: { type: "string", nullable: true },
+          createdAt: { type: "string", format: "date-time" },
+          updatedAt: { type: "string", format: "date-time" },
+          lignes: {
+            type: "array",
+            items: { $ref: "#/components/schemas/LigneCommande" },
           },
         },
       },
@@ -55,9 +192,57 @@ export const openApiDefinition = {
         required: ["success", "data"],
         properties: {
           success: { type: "boolean", example: true },
+          data: { type: "array", items: { $ref: "#/components/schemas/User" } },
+        },
+      },
+      SuccessMaquis: {
+        type: "object",
+        required: ["success", "data"],
+        properties: {
+          success: { type: "boolean", example: true },
+          data: { $ref: "#/components/schemas/Maquis" },
+        },
+      },
+      SuccessMaquisList: {
+        type: "object",
+        required: ["success", "data"],
+        properties: {
+          success: { type: "boolean", example: true },
+          data: { type: "array", items: { $ref: "#/components/schemas/Maquis" } },
+        },
+      },
+      SuccessPlat: {
+        type: "object",
+        required: ["success", "data"],
+        properties: {
+          success: { type: "boolean", example: true },
+          data: { $ref: "#/components/schemas/Plat" },
+        },
+      },
+      SuccessPlatList: {
+        type: "object",
+        required: ["success", "data"],
+        properties: {
+          success: { type: "boolean", example: true },
+          data: { type: "array", items: { $ref: "#/components/schemas/Plat" } },
+        },
+      },
+      SuccessCommande: {
+        type: "object",
+        required: ["success", "data"],
+        properties: {
+          success: { type: "boolean", example: true },
+          data: { $ref: "#/components/schemas/Commande" },
+        },
+      },
+      SuccessCommandeList: {
+        type: "object",
+        required: ["success", "data"],
+        properties: {
+          success: { type: "boolean", example: true },
           data: {
             type: "array",
-            items: { $ref: "#/components/schemas/User" },
+            items: { $ref: "#/components/schemas/Commande" },
           },
         },
       },
@@ -75,19 +260,19 @@ export const openApiDefinition = {
         properties: {
           success: { type: "boolean", example: false },
           message: { type: "string" },
-          stack: {
-            type: "string",
-            description: "Présent en développement pour certaines erreurs 500",
-          },
+          stack: { type: "string" },
         },
       },
       CreateUserRequest: {
         type: "object",
-        required: ["email", "name"],
+        required: ["email", "nom"],
         properties: {
           email: { type: "string", format: "email" },
-          name: { type: "string", minLength: 1, maxLength: 120 },
+          nom: { type: "string" },
+          prenom: { type: "string" },
+          telephone: { type: "string" },
           role: { $ref: "#/components/schemas/Role" },
+          maquisId: { type: "string" },
         },
       },
       UpdateUserRequest: {
@@ -95,87 +280,102 @@ export const openApiDefinition = {
         minProperties: 1,
         properties: {
           email: { type: "string", format: "email" },
-          name: { type: "string", minLength: 1, maxLength: 120 },
+          nom: { type: "string" },
+          prenom: { type: "string", nullable: true },
+          telephone: { type: "string", nullable: true },
           role: { $ref: "#/components/schemas/Role" },
+          maquisId: { type: "string", nullable: true },
+          actif: { type: "boolean" },
         },
       },
-      Etudiant: {
+      CreateMaquisRequest: {
         type: "object",
-        required: [
-          "id",
-          "name",
-          "prenom",
-          "email",
-          "matricule",
-          "createdAt",
-          "filiereId",
-          "userId",
-        ],
+        required: ["nom", "adresse", "proprietaireId"],
         properties: {
-          id: { type: "string" },
-          name: { type: "string" },
-          prenom: { type: "string" },
-          email: { type: "string", format: "email" },
-          matricule: { type: "string" },
-          createdAt: { type: "string", format: "date-time" },
-          filiereId: { type: "string", nullable: true },
-          userId: { type: "string", nullable: true },
+          nom: { type: "string" },
+          description: { type: "string" },
+          adresse: { type: "string" },
+          ville: { type: "string" },
+          telephone: { type: "string" },
+          imageUrl: { type: "string" },
+          ouvert: { type: "boolean" },
+          proprietaireId: { type: "string" },
         },
       },
-      Filiere: {
-        type: "object",
-        required: ["id", "name", "createdAt", "profId"],
-        properties: {
-          id: { type: "string" },
-          name: { type: "string" },
-          createdAt: { type: "string", format: "date-time" },
-          profId: { type: "string", description: "Identifiant utilisateur (professeur)" },
-        },
-      },
-      CreateEtudiantRequest: {
-        type: "object",
-        required: ["name", "prenom", "email", "matricule"],
-        properties: {
-          name: { type: "string", minLength: 1, maxLength: 120 },
-          prenom: { type: "string", minLength: 1, maxLength: 120 },
-          email: { type: "string", format: "email" },
-          matricule: { type: "string", minLength: 1, maxLength: 64 },
-          filiereId: { type: "string", nullable: true },
-          userId: { type: "string", nullable: true },
-        },
-      },
-      UpdateEtudiantRequest: {
+      UpdateMaquisRequest: {
         type: "object",
         minProperties: 1,
         properties: {
-          name: { type: "string", minLength: 1, maxLength: 120 },
-          prenom: { type: "string", minLength: 1, maxLength: 120 },
-          email: { type: "string", format: "email" },
-          matricule: { type: "string", minLength: 1, maxLength: 64 },
-          filiereId: { type: "string", nullable: true },
-          userId: { type: "string", nullable: true },
+          nom: { type: "string" },
+          description: { type: "string", nullable: true },
+          adresse: { type: "string" },
+          ville: { type: "string", nullable: true },
+          telephone: { type: "string", nullable: true },
+          imageUrl: { type: "string", nullable: true },
+          ouvert: { type: "boolean" },
+          proprietaireId: { type: "string" },
         },
       },
-      CreateFiliereRequest: {
+      CreatePlatRequest: {
         type: "object",
-        required: ["name", "profId"],
+        required: ["maquisId", "nom", "prix"],
         properties: {
-          name: { type: "string", minLength: 1, maxLength: 120 },
-          profId: { type: "string", minLength: 1 },
+          maquisId: { type: "string" },
+          nom: { type: "string" },
+          description: { type: "string" },
+          prix: { type: "number" },
+          imageUrl: { type: "string" },
+          disponible: { type: "boolean" },
         },
       },
-      UpdateFiliereRequest: {
+      UpdatePlatRequest: {
         type: "object",
         minProperties: 1,
         properties: {
-          name: { type: "string", minLength: 1, maxLength: 120 },
-          profId: { type: "string", minLength: 1 },
+          maquisId: { type: "string" },
+          nom: { type: "string" },
+          description: { type: "string", nullable: true },
+          prix: { type: "number" },
+          imageUrl: { type: "string", nullable: true },
+          disponible: { type: "boolean" },
+        },
+      },
+      LigneCommandeInput: {
+        type: "object",
+        required: ["platId", "quantite"],
+        properties: {
+          platId: { type: "string" },
+          quantite: { type: "integer", minimum: 1 },
+        },
+      },
+      CreateCommandeRequest: {
+        type: "object",
+        required: ["userId", "maquisId", "lignes"],
+        properties: {
+          userId: { type: "string" },
+          maquisId: { type: "string" },
+          lignes: {
+            type: "array",
+            minItems: 1,
+            items: { $ref: "#/components/schemas/LigneCommandeInput" },
+          },
+          moyenPaiement: { $ref: "#/components/schemas/MoyenDePaiement" },
+          commentaire: { type: "string" },
+        },
+      },
+      UpdateCommandeRequest: {
+        type: "object",
+        minProperties: 1,
+        properties: {
+          statut: { $ref: "#/components/schemas/StatutCommande" },
+          moyenPaiement: { $ref: "#/components/schemas/MoyenDePaiement" },
+          commentaire: { type: "string", nullable: true },
         },
       },
     },
     responses: {
       ErreurValidation: {
-        description: "Requête invalide (validation ou paramètre)",
+        description: "Requête invalide",
         content: {
           "application/json": {
             schema: { $ref: "#/components/schemas/ErrorBody" },
@@ -183,7 +383,7 @@ export const openApiDefinition = {
         },
       },
       ErreurConflit: {
-        description: "Conflit métier (ex. email déjà utilisé)",
+        description: "Conflit (unicité, etc.)",
         content: {
           "application/json": {
             schema: { $ref: "#/components/schemas/ErrorBody" },
@@ -199,7 +399,7 @@ export const openApiDefinition = {
         },
       },
       ErreurServeur: {
-        description: "Erreur interne ou non gérée",
+        description: "Erreur serveur",
         content: {
           "application/json": {
             schema: { $ref: "#/components/schemas/ErrorBody" },

@@ -1,6 +1,6 @@
+import type { Role } from "@prisma/client";
 import { HttpError } from "../types/errors.js";
 import { usersRepository } from "../repositories/users.repository.js";
-import type { Role } from "@prisma/client";
 
 export const usersService = {
   async listUsers() {
@@ -15,8 +15,11 @@ export const usersService = {
 
   async createUser(data: {
     email: string;
-    name: string;
+    nom: string;
+    prenom?: string | null;
+    telephone?: string | null;
     role?: Role;
+    maquisId?: string | null;
   }) {
     const existing = await usersRepository.findByEmail(data.email);
     if (existing) throw new HttpError(409, "Cet email est déjà utilisé");
@@ -25,7 +28,15 @@ export const usersService = {
 
   async updateUser(
     id: string,
-    data: Partial<{ email: string; name: string; role: Role }>,
+    data: Partial<{
+      email: string;
+      nom: string;
+      prenom: string | null;
+      telephone: string | null;
+      role: Role;
+      maquisId: string | null;
+      actif: boolean;
+    }>,
   ) {
     await this.getUserById(id);
     if (data.email) {

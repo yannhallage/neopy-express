@@ -1,12 +1,15 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
-const roleSchema = z.enum(["ADMIN", "PROF", "ETUDIANT"]);
+const roleSchema = z.enum(["CLIENT", "GERANT", "ADMIN"]);
 
 const createUserBodySchema = z.object({
   email: z.string().email("Email invalide"),
-  name: z.string().min(1, "Le nom est requis").max(120),
+  nom: z.string().min(1, "Le nom est requis").max(120),
+  prenom: z.string().max(120).optional().nullable(),
+  telephone: z.string().max(32).optional().nullable(),
   role: roleSchema.optional(),
+  maquisId: z.string().min(1).optional().nullable(),
 });
 
 export type CreateUserBody = z.infer<typeof createUserBodySchema>;
@@ -14,12 +17,24 @@ export type CreateUserBody = z.infer<typeof createUserBodySchema>;
 const updateUserBodySchema = z
   .object({
     email: z.string().email("Email invalide").optional(),
-    name: z.string().min(1).max(120).optional(),
+    nom: z.string().min(1).max(120).optional(),
+    prenom: z.string().max(120).optional().nullable(),
+    telephone: z.string().max(32).optional().nullable(),
     role: roleSchema.optional(),
+    maquisId: z.string().min(1).optional().nullable(),
+    actif: z.boolean().optional(),
   })
-  .refine((o) => o.email !== undefined || o.name !== undefined || o.role !== undefined, {
-    message: "Au moins un champ à mettre à jour est requis",
-  });
+  .refine(
+    (o) =>
+      o.email !== undefined ||
+      o.nom !== undefined ||
+      o.prenom !== undefined ||
+      o.telephone !== undefined ||
+      o.role !== undefined ||
+      o.maquisId !== undefined ||
+      o.actif !== undefined,
+    { message: "Au moins un champ à mettre à jour est requis" },
+  );
 
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 
