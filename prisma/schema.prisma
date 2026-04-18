@@ -7,42 +7,129 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+/// Compte application : client, gérant de maquis, ou admin plateforme
 model User {
-  id        String    @id @default(cuid())
-  email     String    @unique
-  name      String
-  createdAt DateTime  @default(now()) @map("created_at")
-  role      Role      @default(ETUDIANT)
-  Etudiant  Etudiant?
-  Filiere   Filiere[]
+  id             String   @id @default(cuid())
+  email          String   @unique
+  telephone      String?  @unique
+  motDePasseHash String?  @map("mot_de_passe_hash")
+  nom            String
+  prenom         String?
+  role           Role     @default(CLIENT)
+  /// Renseigné si l’utilisateur est employé / second gérant rattaché à un maquis
+  maquisId       String?  @map("maquis_id")
+  actif          Boolean  @default(true)
+  createdAt      DateTime @default(now()) @map("created_at")
+  updatedAt      DateTime @updatedAt @map("updated_at")
+
+  maquisEmployeur Maquis?   @relation("EmployesMaquis", fields: [maquisId], references: [id])
+  maquisPossedes  Maquis[]  @relation("ProprietaireMaquis")
+  commandes       Commande[]
 
   @@map("users")
 }
 
-model Etudiant {
-  id         String   @id
-  name       String
-  prenom     String
-  email      String   @unique
-  matricule  String   @unique
-  created_at DateTime @default(now())
-  filiereId  String?
-  userId     String?  @unique
-  Filiere    Filiere? @relation(fields: [filiereId], references: [id])
-  users      User?    @relation(fields: [userId], references: [id])
+/// Point de vente type maquis / attiéké-garba (nom, lieu, horaires implicites côté métier)
+model Maquis {
+  id          String   @id @default(cuid())
+  nom         String
+  description String?
+  adresse     String
+  ville       String?
+  telephone   String?
+  imageUrl    String?  @map("image_url")
+  ouvert      Boolean  @default(true)
+  proprietaireId String @map("proprietaire_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  proprietaire User       @relation("ProprietaireMaquis", fields: [proprietaireId], references: [id])
+  employes     User[]     @relation("EmployesMaquis")
+  plats        Plat[]
+  commandes    Commande[]
+
+  @@index([proprietaireId])
+  @@map("maquis")
 }
 
-model Filiere {
-  id         String     @id
-  name       String
-  created_at DateTime   @default(now())
-  profId     String
-  Etudiant   Etudiant[]
-  users      User       @relation(fields: [profId], references: [id])
+/// Plat vendu (garba, attiéké, alloco, etc.) — rattaché à un seul maquis
+model Plat {
+  id          String   @id @default(cuid())
+  maquisId    String   @map("maquis_id")
+  nom         String
+  description String?
+  prix        Decimal  @db.Decimal(10, 2)
+  imageUrl    String?  @map("image_url")
+  disponible  Boolean  @default(true)
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  maquis           Maquis          @relation(fields: [maquisId], references: [id], onDelete: Cascade)
+  lignesCommande   LigneCommande[]
+
+  @@index([maquisId])
+  @@map("plats")
+}
+
+/// Commande passée par un client auprès d’un maquis
+model Commande {
+  id           String          @id @default(cuid())
+  userId       String          @map("user_id")
+  maquisId     String          @map("maquis_id")
+  statut        StatutCommande   @default(EN_ATTENTE)
+  moyenPaiement MoyenDePaiement @default(ESPECES) @map("moyen_paiement")
+  /// Total payé / attendu (souvent recalculé à partir des lignes, conservé pour l’historique)
+  montantTotal Decimal         @map("montant_total") @db.Decimal(10, 2)
+  commentaire  String?         @map("commentaire")
+  createdAt    DateTime        @default(now()) @map("created_at")
+  updatedAt    DateTime        @updatedAt @map("updated_at")
+
+  user    User            @relation(fields: [userId], references: [id], onDelete: Restrict)
+  maquis  Maquis          @relation(fields: [maquisId], references: [id], onDelete: Restrict)
+  lignes  LigneCommande[]
+
+  @@index([userId])
+  @@index([maquisId])
+  @@index([statut])
+  @@map("commandes")
+}
+
+/// Détail d’une commande : plat, quantité, prix unitaire au moment de la commande
+model LigneCommande {
+  id             String   @id @default(cuid())
+  commandeId     String   @map("commande_id")
+  platId         String   @map("plat_id")
+  quantite       Int      @default(1)
+  prixUnitaire   Decimal  @map("prix_unitaire") @db.Decimal(10, 2)
+
+  commande Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
+  plat     Plat     @relation(fields: [platId], references: [id], onDelete: Restrict)
+
+  @@index([commandeId])
+  @@index([platId])
+  @@map("lignes_commande")
 }
 
 enum Role {
+  CLIENT
+  GERANT
   ADMIN
-  PROF
-  ETUDIANT
+}
+
+enum StatutCommande {
+  EN_ATTENTE
+  EN_PREPARATION
+  PRETE
+  LIVREE
+  ANNULEE
+}
+
+enum MoyenDePaiement {
+  ESPECES
+  ORANGE_MONEY
+  MTN_MONEY
+  MOOV_MONEY
+  WAVE
+  CARTE_BANCAIRE
+  AUTRE
 }
