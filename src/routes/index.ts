@@ -1,5 +1,7 @@
 import { Router } from "express";
 import { usersRouter } from "./users.routes.js";
+import { etudiantsRouter } from "./etudiants.routes.js";
+import { filieresRouter } from "./filieres.routes.js";
 
 export const apiRouter = Router();
 
@@ -26,3 +28,5 @@ apiRouter.get("/health", (_req, res) => {
 });
 
 apiRouter.use("/users", usersRouter);
+apiRouter.use("/etudiants", etudiantsRouter);
+apiRouter.use("/filieres", filieresRouter);

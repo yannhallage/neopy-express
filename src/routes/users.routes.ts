@@ -1,7 +1,10 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { usersController } from "../controllers/users.controller.js";
-import { validateCreateUser } from "../validators/users.validator.js";
+import {
+  validateCreateUser,
+  validateUpdateUser,
+} from "../validators/users.validator.js";
 
 export const usersRouter = Router();
 
@@ -72,6 +75,58 @@ export const usersRouter = Router();
  *         $ref: '#/components/responses/ErreurIntrouvable'
  *       500:
  *         $ref: '#/components/responses/ErreurServeur'
+ *   patch:
+ *     tags:
+ *       - Utilisateurs
+ *     summary: Mettre à jour un utilisateur
+ *     operationId: updateUser
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/UpdateUserRequest'
+ *     responses:
+ *       200:
+ *         description: Utilisateur mis à jour
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessUser'
+ *       400:
+ *         $ref: '#/components/responses/ErreurValidation'
+ *       404:
+ *         $ref: '#/components/responses/ErreurIntrouvable'
+ *       409:
+ *         $ref: '#/components/responses/ErreurConflit'
+ *       500:
+ *         $ref: '#/components/responses/ErreurServeur'
+ *   delete:
+ *     tags:
+ *       - Utilisateurs
+ *     summary: Supprimer un utilisateur
+ *     operationId: deleteUser
+ *     parameters:
+ *       - name: id
+ *         in: path
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       204:
+ *         description: Supprimé
+ *       400:
+ *         $ref: '#/components/responses/ErreurValidation'
+ *       404:
+ *         $ref: '#/components/responses/ErreurIntrouvable'
+ *       500:
+ *         $ref: '#/components/responses/ErreurServeur'
  */
 usersRouter.get("/", asyncHandler(usersController.list));
 usersRouter.get("/:id", asyncHandler(usersController.getById));
@@ -80,3 +135,9 @@ usersRouter.post(
   validateCreateUser,
   asyncHandler(usersController.create),
 );
+usersRouter.patch(
+  "/:id",
+  validateUpdateUser,
+  asyncHandler(usersController.update),
+);
+usersRouter.delete("/:id", asyncHandler(usersController.remove));

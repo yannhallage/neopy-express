@@ -16,17 +16,25 @@ export const openApiDefinition = {
   tags: [
     { name: "Système", description: "État du service" },
     { name: "Utilisateurs", description: "Gestion des utilisateurs" },
+    { name: "Étudiants", description: "Gestion des étudiants" },
+    { name: "Filières", description: "Gestion des filières" },
     { name: "Documentation", description: "Spécification machine" },
   ],
   components: {
     schemas: {
+      Role: {
+        type: "string",
+        enum: ["ADMIN", "PROF", "ETUDIANT"],
+        description: "Rôle applicatif",
+      },
       User: {
         type: "object",
-        required: ["id", "email", "name", "createdAt"],
+        required: ["id", "email", "name", "role", "createdAt"],
         properties: {
           id: { type: "string", example: "clxyz123" },
           email: { type: "string", format: "email" },
           name: { type: "string", maxLength: 120 },
+          role: { $ref: "#/components/schemas/Role" },
           createdAt: {
             type: "string",
             format: "date-time",
@@ -79,6 +87,89 @@ export const openApiDefinition = {
         properties: {
           email: { type: "string", format: "email" },
           name: { type: "string", minLength: 1, maxLength: 120 },
+          role: { $ref: "#/components/schemas/Role" },
+        },
+      },
+      UpdateUserRequest: {
+        type: "object",
+        minProperties: 1,
+        properties: {
+          email: { type: "string", format: "email" },
+          name: { type: "string", minLength: 1, maxLength: 120 },
+          role: { $ref: "#/components/schemas/Role" },
+        },
+      },
+      Etudiant: {
+        type: "object",
+        required: [
+          "id",
+          "name",
+          "prenom",
+          "email",
+          "matricule",
+          "createdAt",
+          "filiereId",
+          "userId",
+        ],
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          prenom: { type: "string" },
+          email: { type: "string", format: "email" },
+          matricule: { type: "string" },
+          createdAt: { type: "string", format: "date-time" },
+          filiereId: { type: "string", nullable: true },
+          userId: { type: "string", nullable: true },
+        },
+      },
+      Filiere: {
+        type: "object",
+        required: ["id", "name", "createdAt", "profId"],
+        properties: {
+          id: { type: "string" },
+          name: { type: "string" },
+          createdAt: { type: "string", format: "date-time" },
+          profId: { type: "string", description: "Identifiant utilisateur (professeur)" },
+        },
+      },
+      CreateEtudiantRequest: {
+        type: "object",
+        required: ["name", "prenom", "email", "matricule"],
+        properties: {
+          name: { type: "string", minLength: 1, maxLength: 120 },
+          prenom: { type: "string", minLength: 1, maxLength: 120 },
+          email: { type: "string", format: "email" },
+          matricule: { type: "string", minLength: 1, maxLength: 64 },
+          filiereId: { type: "string", nullable: true },
+          userId: { type: "string", nullable: true },
+        },
+      },
+      UpdateEtudiantRequest: {
+        type: "object",
+        minProperties: 1,
+        properties: {
+          name: { type: "string", minLength: 1, maxLength: 120 },
+          prenom: { type: "string", minLength: 1, maxLength: 120 },
+          email: { type: "string", format: "email" },
+          matricule: { type: "string", minLength: 1, maxLength: 64 },
+          filiereId: { type: "string", nullable: true },
+          userId: { type: "string", nullable: true },
+        },
+      },
+      CreateFiliereRequest: {
+        type: "object",
+        required: ["name", "profId"],
+        properties: {
+          name: { type: "string", minLength: 1, maxLength: 120 },
+          profId: { type: "string", minLength: 1 },
+        },
+      },
+      UpdateFiliereRequest: {
+        type: "object",
+        minProperties: 1,
+        properties: {
+          name: { type: "string", minLength: 1, maxLength: 120 },
+          profId: { type: "string", minLength: 1 },
         },
       },
     },

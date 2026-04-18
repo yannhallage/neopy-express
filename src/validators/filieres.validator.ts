@@ -1,39 +1,35 @@
 import type { NextFunction, Request, Response } from "express";
 import { z } from "zod";
 
-const roleSchema = z.enum(["ADMIN", "PROF", "ETUDIANT"]);
-
-const createUserBodySchema = z.object({
-  email: z.string().email("Email invalide"),
+const createFiliereBodySchema = z.object({
   name: z.string().min(1, "Le nom est requis").max(120),
-  role: roleSchema.optional(),
+  profId: z.string().min(1, "profId est requis"),
 });
 
-export type CreateUserBody = z.infer<typeof createUserBodySchema>;
+export type CreateFiliereBody = z.infer<typeof createFiliereBodySchema>;
 
-const updateUserBodySchema = z
+const updateFiliereBodySchema = z
   .object({
-    email: z.string().email("Email invalide").optional(),
     name: z.string().min(1).max(120).optional(),
-    role: roleSchema.optional(),
+    profId: z.string().min(1).optional(),
   })
-  .refine((o) => o.email !== undefined || o.name !== undefined || o.role !== undefined, {
+  .refine((o) => o.name !== undefined || o.profId !== undefined, {
     message: "Au moins un champ à mettre à jour est requis",
   });
 
-export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
+export type UpdateFiliereBody = z.infer<typeof updateFiliereBodySchema>;
 
 function parseFail(res: Response, parsed: z.SafeParseError<unknown>): void {
   const message = parsed.error.issues.map((e) => e.message).join(", ");
   res.status(400).json({ success: false, message });
 }
 
-export function validateCreateUser(
+export function validateCreateFiliere(
   req: Request,
   res: Response,
   next: NextFunction,
 ): void {
-  const parsed = createUserBodySchema.safeParse(req.body);
+  const parsed = createFiliereBodySchema.safeParse(req.body);
   if (!parsed.success) {
     parseFail(res, parsed);
     return;
@@ -42,12 +38,12 @@ export function validateCreateUser(
   next();
 }
 
-export function validateUpdateUser(
+export function validateUpdateFiliere(
   req: Request,
   res: Response,
   next: NextFunction,
 ): void {
-  const parsed = updateUserBodySchema.safeParse(req.body);
+  const parsed = updateFiliereBodySchema.safeParse(req.body);
   if (!parsed.success) {
     parseFail(res, parsed);
     return;

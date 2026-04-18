@@ -1,16 +1,20 @@
+import type { Role } from "@prisma/client";
 import type { User } from "../models/user.model.js";
 import { prisma } from "../lib/prisma.js";
+import { rethrowPrisma } from "../utils/prismaErrors.js";
 
 function toDomain(row: {
   id: string;
   email: string;
   name: string;
   createdAt: Date;
+  role: Role;
 }): User {
   return {
     id: row.id,
     email: row.email,
     name: row.name,
+    role: row.role,
     createdAt: row.createdAt.toISOString(),
   };
 }
@@ -35,13 +39,49 @@ export const usersRepository = {
     return row ? toDomain(row) : null;
   },
 
-  async create(data: Pick<User, "email" | "name">): Promise<User> {
-    const row = await prisma.user.create({
-      data: {
-        email: data.email.toLowerCase(),
-        name: data.name,
-      },
-    });
-    return toDomain(row);
+  async create(data: {
+    email: string;
+    name: string;
+    role?: Role;
+  }): Promise<User> {
+    try {
+      const row = await prisma.user.create({
+        data: {
+          email: data.email.toLowerCase(),
+          name: data.name,
+          ...(data.role !== undefined ? { role: data.role } : {}),
+        },
+      });
+      return toDomain(row);
+    } catch (e) {
+      rethrowPrisma(e);
+    }
+  },
+
+  async update(
+    id: string,
+    data: Partial<{ email: string; name: string; role: Role }>,
+  ): Promise<User> {
+    try {
+      const row = await prisma.user.update({
+        where: { id },
+        data: {
+          ...(data.email !== undefined && { email: data.email.toLowerCase() }),
+          ...(data.name !== undefined && { name: data.name }),
+          ...(data.role !== undefined && { role: data.role }),
+        },
+      });
+      return toDomain(row);
+    } catch (e) {
+      rethrowPrisma(e);
+    }
+  },
+
+  async delete(id: string): Promise<void> {
+    try {
+      await prisma.user.delete({ where: { id } });
+    } catch (e) {
+      rethrowPrisma(e);
+    }
   },
 };

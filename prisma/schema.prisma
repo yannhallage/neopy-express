@@ -3,16 +3,46 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  // directUrl = env("DIRECT_URL")
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
 }
 
 model User {
-  id        String   @id @default(cuid())
-  email     String   @unique
+  id        String    @id @default(cuid())
+  email     String    @unique
   name      String
-  createdAt DateTime @default(now()) @map("created_at")
+  createdAt DateTime  @default(now()) @map("created_at")
+  role      Role      @default(ETUDIANT)
+  Etudiant  Etudiant?
+  Filiere   Filiere[]
 
   @@map("users")
+}
+
+model Etudiant {
+  id         String   @id
+  name       String
+  prenom     String
+  email      String   @unique
+  matricule  String   @unique
+  created_at DateTime @default(now())
+  filiereId  String?
+  userId     String?  @unique
+  Filiere    Filiere? @relation(fields: [filiereId], references: [id])
+  users      User?    @relation(fields: [userId], references: [id])
+}
+
+model Filiere {
+  id         String     @id
+  name       String
+  created_at DateTime   @default(now())
+  profId     String
+  Etudiant   Etudiant[]
+  users      User       @relation(fields: [profId], references: [id])
+}
+
+enum Role {
+  ADMIN
+  PROF
+  ETUDIANT
 }
