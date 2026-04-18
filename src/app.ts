@@ -3,19 +3,43 @@ import cors from "cors";
 import helmet from "helmet";
 import morgan from "morgan";
 import { env } from "./config/env.js";
+import {
+  OPENAPI_JSON_PATH,
+  SWAGGER_UI_PATH,
+  buildOpenApiSpec,
+  createSwaggerUiHandlers,
+} from "./config/swagger.js";
 import { apiRouter } from "./routes/index.js";
 import { notFound } from "./middlewares/notFound.middleware.js";
 import { errorHandler } from "./middlewares/error.middleware.js";
 
 export function createApp(): express.Application {
   const app = express();
+  const openApiSpec = buildOpenApiSpec();
 
-  app.use(helmet());
+  app.use(
+    helmet({
+      contentSecurityPolicy: {
+        directives: {
+          defaultSrc: ["'self'"],
+          scriptSrc: ["'self'", "'unsafe-inline'"],
+          styleSrc: ["'self'", "'unsafe-inline'"],
+          imgSrc: ["'self'", "data:", "https:"],
+        },
+      },
+    }),
+  );
   app.use(cors());
   app.use(express.json());
   if (env.isDev) {
     app.use(morgan("dev"));
   }
+
+  app.get(OPENAPI_JSON_PATH, (_req, res) => {
+    res.json(openApiSpec);
+  });
+
+  app.use(SWAGGER_UI_PATH, ...createSwaggerUiHandlers(openApiSpec));
 
   app.use("/api/v1", apiRouter);
 

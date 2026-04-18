@@ -3,6 +3,24 @@ import { usersRouter } from "./users.routes.js";
 
 export const apiRouter = Router();
 
+/**
+ * @openapi
+ * /health:
+ *   get:
+ *     tags:
+ *       - Système
+ *     summary: Vérification de disponibilité
+ *     operationId: getHealth
+ *     responses:
+ *       200:
+ *         description: Service joignable
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessHealth'
+ *       500:
+ *         $ref: '#/components/responses/ErreurServeur'
+ */
 apiRouter.get("/health", (_req, res) => {
   res.json({ success: true, message: "OK" });
 });
