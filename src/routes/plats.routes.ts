@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
 import { platsController } from "../controllers/plats.controller.js";
+import { parseSingleImageUpload } from "../middlewares/uploadImage.middleware.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   validateCreatePlat,
   validateUpdatePlat,
@@ -99,8 +100,49 @@ export const platsRouter = Router();
  *     responses:
  *       204:
  *         description: Supprimé
+ * /plats/{id}/image:
+ *   post:
+ *     tags: [Plats]
+ *     summary: Téléverser l’image du plat (Cloudinary)
+ *     operationId: uploadPlatImage
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [image]
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessPlat'
+ *       400:
+ *         $ref: '#/components/responses/ErreurValidation'
+ *       404:
+ *         $ref: '#/components/responses/ErreurIntrouvable'
+ *       413:
+ *         description: Fichier trop volumineux
+ *       503:
+ *         description: Cloudinary non configuré
  */
 platsRouter.get("/", asyncHandler(platsController.list));
+platsRouter.post(
+  "/:id/image",
+  parseSingleImageUpload,
+  asyncHandler(platsController.uploadImage),
+);
 platsRouter.get("/:id", asyncHandler(platsController.getById));
 platsRouter.post(
   "/",

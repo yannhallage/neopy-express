@@ -1,5 +1,7 @@
 import type { Request, Response } from "express";
+import { uploadImageBuffer } from "../services/cloudinaryUpload.service.js";
 import { platsService } from "../services/plats.service.js";
+import { HttpError } from "../types/errors.js";
 import type { CreatePlatBody, UpdatePlatBody } from "../validators/plats.validator.js";
 
 function maquisIdFromQuery(req: Request): string | undefined {
@@ -37,6 +39,27 @@ export const platsController = {
     }
     const body = req.body as UpdatePlatBody;
     const data = await platsService.update(id, body);
+    res.json({ success: true, data });
+  },
+
+  async uploadImage(req: Request, res: Response): Promise<void> {
+    const id = req.params.id;
+    if (!id) {
+      res.status(400).json({ success: false, message: "Identifiant manquant" });
+      return;
+    }
+    if (!req.file) {
+      throw new HttpError(
+        400,
+        "Image requise : envoyez un multipart/form-data avec le champ « image ».",
+      );
+    }
+    const imageUrl = await uploadImageBuffer(
+      req.file.buffer,
+      req.file.mimetype,
+      "plats",
+    );
+    const data = await platsService.update(id, { imageUrl });
     res.json({ success: true, data });
   },
 

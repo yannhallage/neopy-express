@@ -1,8 +1,13 @@
 import type { NextFunction, Request, Response } from "express";
+import { MulterError } from "multer";
 import { env } from "../config/env.js";
 import { isHttpError } from "../types/errors.js";
 
 function getStatusCode(err: unknown): number {
+  if (err instanceof MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") return 413;
+    return 400;
+  }
   if (isHttpError(err)) return err.statusCode;
   if (
     typeof err === "object" &&
@@ -24,6 +29,15 @@ function getStatusCode(err: unknown): number {
 }
 
 function getMessage(err: unknown): string {
+  if (err instanceof MulterError) {
+    if (err.code === "LIMIT_FILE_SIZE") {
+      return "Image trop volumineuse (max. 5 Mo).";
+    }
+    if (err.code === "LIMIT_UNEXPECTED_FILE") {
+      return "Champ fichier inattendu : utilisez le champ « image ».";
+    }
+    return err.message || "Erreur lors de l’upload du fichier.";
+  }
   if (err instanceof Error) return err.message;
   return String(err);
 }

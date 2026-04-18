@@ -1,6 +1,7 @@
 import { Router } from "express";
-import { asyncHandler } from "../utils/asyncHandler.js";
 import { maquisController } from "../controllers/maquis.controller.js";
+import { parseSingleImageUpload } from "../middlewares/uploadImage.middleware.js";
+import { asyncHandler } from "../utils/asyncHandler.js";
 import {
   validateCreateMaquis,
   validateUpdateMaquis,
@@ -93,8 +94,49 @@ export const maquisRouter = Router();
  *     responses:
  *       204:
  *         description: Supprimé
+ * /maquis/{id}/image:
+ *   post:
+ *     tags: [Maquis]
+ *     summary: Téléverser l’image du maquis (Cloudinary)
+ *     operationId: uploadMaquisImage
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             required: [image]
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMaquis'
+ *       400:
+ *         $ref: '#/components/responses/ErreurValidation'
+ *       404:
+ *         $ref: '#/components/responses/ErreurIntrouvable'
+ *       413:
+ *         description: Fichier trop volumineux
+ *       503:
+ *         description: Cloudinary non configuré
  */
 maquisRouter.get("/", asyncHandler(maquisController.list));
+maquisRouter.post(
+  "/:id/image",
+  parseSingleImageUpload,
+  asyncHandler(maquisController.uploadImage),
+);
 maquisRouter.get("/:id", asyncHandler(maquisController.getById));
 maquisRouter.post(
   "/",
