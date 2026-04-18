@@ -1,0 +1,24 @@
+sequenceDiagram
+  participant C as Client
+  participant E as Express app
+  participant R as Route + validator
+  participant Ct as Controller
+  participant S as Service
+  participant Rep as Repository
+  participant P as Prisma
+  participant D as Base de données
+
+  C->>E: HTTP /api/v1/...
+  E->>R: Routage + body/query
+  R->>R: Validation (ex. validateCreateUser)
+  R->>Ct: asyncHandler → handler
+  Ct->>S: Logique métier / orchestration
+  S->>Rep: Accès données abstrait
+  Rep->>P: Requêtes Prisma
+  P->>D: SQL
+  D-->>P: Résultat
+  P-->>Rep: Modèles / records
+  Rep-->>S: Données domaine
+  S-->>Ct: Résultat / erreurs métier
+  Ct-->>E: res.json(...) / status
+  E-->>C: Réponse HTTP

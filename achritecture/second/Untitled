@@ -1,0 +1,69 @@
+flowchart TB
+  subgraph Client
+    HTTP[Client HTTP / Swagger UI]
+  end
+
+  subgraph "Serveur Node (src/server.ts)"
+    BOOT[Connexion DB + verifyDatabase]
+    LISTEN[HTTP listen]
+  end
+
+  subgraph "Application Express (src/app.ts)"
+    MW_GLOBAL[helmet, cors, express.json, morgan dev]
+    DOCS[OpenAPI JSON + Swagger UI]
+    API["/api/v1 → apiRouter"]
+    MW404[notFound]
+    MW500[errorHandler]
+  end
+
+  subgraph "Routes (src/routes)"
+    R_HEALTH["/health"]
+    R_USERS["/users"]
+    R_ETU["/etudiants"]
+    R_FIL["/filieres"]
+  end
+
+  subgraph "Par ressource (ex. users)"
+    VAL[validators]
+    AH[asyncHandler]
+    CTRL[controllers]
+    SVC[services]
+    REPO[repositories]
+  end
+
+  subgraph "Persistance"
+    PRISMA[(Prisma Client)]
+    DB[(Base SQL)]
+  end
+
+  subgraph "Transversal"
+    ENV[config/env]
+    DBCONF[config/database]
+    TYPES[types/errors, utils/prismaErrors]
+  end
+
+  HTTP --> MW_GLOBAL
+  HTTP --> DOCS
+  HTTP --> API
+  BOOT --> LISTEN
+  LISTEN --> MW_GLOBAL
+
+  API --> R_HEALTH
+  API --> R_USERS
+  API --> R_ETU
+  API --> R_FIL
+
+  R_USERS --> VAL
+  R_USERS --> AH
+  AH --> CTRL
+  CTRL --> SVC
+  SVC --> REPO
+  REPO --> PRISMA
+  PRISMA --> DB
+
+  MW404 --> HTTP
+  MW500 --> HTTP
+
+  ENV -.-> BOOT
+  ENV -.-> LISTEN
+  DBCONF -.-> BOOT
