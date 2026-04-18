@@ -3,14 +3,20 @@ import { env } from "./config/env.js";
 import {
   connectDatabase,
   disconnectDatabase,
+  verifyDatabase,
 } from "./config/database.js";
 
 async function main(): Promise<void> {
   await connectDatabase();
+  await verifyDatabase();
+  console.log("Base de données : OK (connexion + requête de test)");
+
   const app = createApp();
 
   app.listen(env.port, () => {
-    console.log(`Serveur sur http://localhost:${env.port} (${env.nodeEnv})`);
+    console.log(
+      `Serveur HTTP : OK — http://localhost:${env.port} (${env.nodeEnv})`,
+    );
   });
 
   const shutdown = async (signal: string) => {
