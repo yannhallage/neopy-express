@@ -4,6 +4,7 @@ import { usersRouter } from "./users.routes.js";
 import { maquisRouter } from "./maquis.routes.js";
 import { platsRouter } from "./plats.routes.js";
 import { commandesRouter } from "./commandes.routes.js";
+import { historiquesRouter } from "./historiques.routes.js";
 
 export const apiRouter = Router();
 
@@ -34,3 +35,4 @@ apiRouter.use("/users", usersRouter);
 apiRouter.use("/maquis", maquisRouter);
 apiRouter.use("/plats", platsRouter);
 apiRouter.use("/commandes", commandesRouter);
+apiRouter.use("/historiques", historiquesRouter);
