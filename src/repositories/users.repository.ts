@@ -13,6 +13,9 @@ const authSelect = {
   maquisId: true,
   actif: true,
   motDePasseHash: true,
+  emailVerificationCode: true,
+  emailVerificationExpiresAt: true,
+  emailVerifiedAt: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -27,6 +30,9 @@ export type UserAuthRecord = {
   maquisId: string | null;
   actif: boolean;
   motDePasseHash: string | null;
+  emailVerificationCode: string | null;
+  emailVerificationExpiresAt: string | null;
+  emailVerifiedAt: string | null;
   createdAt: string;
   updatedAt: string;
 };
@@ -41,6 +47,9 @@ function toAuthRecord(row: {
   maquisId: string | null;
   actif: boolean;
   motDePasseHash: string | null;
+  emailVerificationCode: string | null;
+  emailVerificationExpiresAt: Date | null;
+  emailVerifiedAt: Date | null;
   createdAt: Date;
   updatedAt: Date;
 }): UserAuthRecord {
@@ -54,6 +63,11 @@ function toAuthRecord(row: {
     maquisId: row.maquisId,
     actif: row.actif,
     motDePasseHash: row.motDePasseHash,
+    emailVerificationCode: row.emailVerificationCode,
+    emailVerificationExpiresAt: row.emailVerificationExpiresAt
+      ? row.emailVerificationExpiresAt.toISOString()
+      : null,
+    emailVerifiedAt: row.emailVerifiedAt ? row.emailVerifiedAt.toISOString() : null,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -139,6 +153,10 @@ export const usersRepository = {
     role?: Role;
     maquisId?: string | null;
     motDePasseHash?: string | null;
+    actif?: boolean;
+    emailVerificationCode?: string | null;
+    emailVerificationExpiresAt?: Date | null;
+    emailVerifiedAt?: Date | null;
   }): Promise<User> {
     try {
       const row = await prisma.user.create({
@@ -151,6 +169,16 @@ export const usersRepository = {
           ...(data.maquisId !== undefined && { maquisId: data.maquisId }),
           ...(data.motDePasseHash !== undefined && {
             motDePasseHash: data.motDePasseHash,
+          }),
+          ...(data.actif !== undefined && { actif: data.actif }),
+          ...(data.emailVerificationCode !== undefined && {
+            emailVerificationCode: data.emailVerificationCode,
+          }),
+          ...(data.emailVerificationExpiresAt !== undefined && {
+            emailVerificationExpiresAt: data.emailVerificationExpiresAt,
+          }),
+          ...(data.emailVerifiedAt !== undefined && {
+            emailVerifiedAt: data.emailVerifiedAt,
           }),
         },
         select: userSelect,
@@ -171,6 +199,9 @@ export const usersRepository = {
       role: Role;
       maquisId: string | null;
       actif: boolean;
+      emailVerificationCode: string | null;
+      emailVerificationExpiresAt: Date | null;
+      emailVerifiedAt: Date | null;
     }>,
   ): Promise<User> {
     try {
@@ -184,6 +215,15 @@ export const usersRepository = {
           ...(data.role !== undefined && { role: data.role }),
           ...(data.maquisId !== undefined && { maquisId: data.maquisId }),
           ...(data.actif !== undefined && { actif: data.actif }),
+          ...(data.emailVerificationCode !== undefined && {
+            emailVerificationCode: data.emailVerificationCode,
+          }),
+          ...(data.emailVerificationExpiresAt !== undefined && {
+            emailVerificationExpiresAt: data.emailVerificationExpiresAt,
+          }),
+          ...(data.emailVerifiedAt !== undefined && {
+            emailVerifiedAt: data.emailVerifiedAt,
+          }),
         },
         select: userSelect,
       });

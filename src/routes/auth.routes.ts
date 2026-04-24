@@ -2,7 +2,11 @@ import { Router } from "express";
 import { authController } from "../controllers/auth.controller.js";
 import { requireAuth } from "../middlewares/auth.middleware.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
-import { validateLogin, validateRegister } from "../validators/auth.validator.js";
+import {
+  validateConfirmEmail,
+  validateLogin,
+  validateRegister,
+} from "../validators/auth.validator.js";
 
 export const authRouter = Router();
 
@@ -52,6 +56,54 @@ export const authRouter = Router();
  *         $ref: '#/components/responses/ErreurValidation'
  *       409:
  *         $ref: '#/components/responses/ErreurConflit'
+ * /auth/confirm-email:
+ *   post:
+ *     tags: [Authentification]
+ *     summary: Confirmation de l'email après inscription
+ *     operationId: confirmEmail
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [email, code]
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *               code:
+ *                 type: string
+ *                 minLength: 6
+ *                 maxLength: 6
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               required: [success, data]
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                   example: true
+ *                 data:
+ *                   type: object
+ *                   required: [message, permissions]
+ *                   properties:
+ *                     message:
+ *                       type: string
+ *                     accessToken:
+ *                       type: string
+ *                     tokenType:
+ *                       type: string
+ *                       example: Bearer
+ *                     permissions:
+ *                       type: array
+ *                       items:
+ *                         type: string
+ *       400:
+ *         $ref: '#/components/responses/ErreurValidation'
  * /auth/me:
  *   get:
  *     tags: [Authentification]
@@ -75,5 +127,10 @@ authRouter.post(
   "/register",
   validateRegister,
   asyncHandler(authController.register),
+);
+authRouter.post(
+  "/confirm-email",
+  validateConfirmEmail,
+  asyncHandler(authController.confirmEmail),
 );
 authRouter.get("/me", requireAuth, asyncHandler(authController.me));

@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { Role } from "@prisma/client";
 import { z } from "zod";
 
 const passwordSchema = z
@@ -19,9 +20,20 @@ const registerBodySchema = z.object({
   nom: z.string().min(1, "Le nom est requis").max(120),
   prenom: z.string().max(120).optional().nullable(),
   telephone: z.string().max(32).optional().nullable(),
+  role: z.nativeEnum(Role).optional(),
 });
 
 export type RegisterBody = z.infer<typeof registerBodySchema>;
+
+const confirmEmailBodySchema = z.object({
+  email: z.string().email("Email invalide"),
+  code: z
+    .string()
+    .min(4, "Code de confirmation invalide")
+    .max(32, "Code de confirmation invalide"),
+});
+
+export type ConfirmEmailBody = z.infer<typeof confirmEmailBodySchema>;
 
 function parseFail(res: Response, parsed: z.SafeParseError<unknown>): void {
   const message = parsed.error.issues.map((e) => e.message).join(", ");
@@ -48,6 +60,20 @@ export function validateRegister(
   next: NextFunction,
 ): void {
   const parsed = registerBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    parseFail(res, parsed);
+    return;
+  }
+  req.body = parsed.data;
+  next();
+}
+
+export function validateConfirmEmail(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const parsed = confirmEmailBodySchema.safeParse(req.body);
   if (!parsed.success) {
     parseFail(res, parsed);
     return;

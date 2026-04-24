@@ -13,12 +13,16 @@ model User {
   email          String   @unique
   telephone      String?  @unique
   motDePasseHash String?  @map("mot_de_passe_hash")
+  emailVerificationCode      String?   @map("email_verification_code")
+  emailVerificationExpiresAt DateTime? @map("email_verification_expires_at")
+  emailVerifiedAt            DateTime? @map("email_verified_at")
   nom            String
   prenom         String?
   role           Role     @default(CLIENT)
   /// Renseigné si l’utilisateur est employé / second gérant rattaché à un maquis
   maquisId       String?  @map("maquis_id")
   actif          Boolean  @default(true)
+  isComplete     Boolean  @default(false) @map("is_complete")
   createdAt      DateTime @default(now()) @map("created_at")
   updatedAt      DateTime @updatedAt @map("updated_at")
 

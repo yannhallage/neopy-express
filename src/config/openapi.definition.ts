@@ -208,6 +208,7 @@ export const openApiDefinition = {
           nom: { type: "string" },
           prenom: { type: "string" },
           telephone: { type: "string" },
+          role: { $ref: "#/components/schemas/Role" },
         },
       },
       AuthSession: {
