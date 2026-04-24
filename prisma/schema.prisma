@@ -29,6 +29,7 @@ model User {
   maquisEmployeur Maquis?   @relation("EmployesMaquis", fields: [maquisId], references: [id])
   maquisPossedes  Maquis[]  @relation("ProprietaireMaquis")
   commandes       Commande[]
+  historiques     Historique[]
 
   @@map("users")
 }
@@ -51,6 +52,7 @@ model Maquis {
   employes     User[]     @relation("EmployesMaquis")
   plats        Plat[]
   commandes    Commande[]
+  historiques     Historique[]
 
   @@index([proprietaireId])
   @@map("maquis")
@@ -91,6 +93,7 @@ model Commande {
   user    User            @relation(fields: [userId], references: [id], onDelete: Restrict)
   maquis  Maquis          @relation(fields: [maquisId], references: [id], onDelete: Restrict)
   lignes  LigneCommande[]
+  historiques     Historique[]
 
   @@index([userId])
   @@index([maquisId])
@@ -136,4 +139,24 @@ enum MoyenDePaiement {
   WAVE
   CARTE_BANCAIRE
   AUTRE
+}
+
+/// Historique des actions (commandes, utilisateurs, maquis, etc.)
+model Historique {
+  id          String   @id @default(cuid())
+  userId      String?  @map("user_id")   // qui a fait l’action
+  commandeId  String?  @map("commande_id")
+  maquisId    String?  @map("maquis_id")
+  action      String   // description de l’action (ex: "Création commande", "Modification profil")
+  details     String?  // infos complémentaires
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
+  commande Commande? @relation(fields: [commandeId], references: [id], onDelete: SetNull)
+  maquis   Maquis?   @relation(fields: [maquisId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([commandeId])
+  @@index([maquisId])
+  @@map("historiques")
 }
