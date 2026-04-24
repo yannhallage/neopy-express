@@ -12,6 +12,7 @@ const authSelect = {
   role: true,
   maquisId: true,
   actif: true,
+  isComplete: true,
   motDePasseHash: true,
   emailVerificationCode: true,
   emailVerificationExpiresAt: true,
@@ -29,6 +30,7 @@ export type UserAuthRecord = {
   role: Role;
   maquisId: string | null;
   actif: boolean;
+  isComplete: boolean;
   motDePasseHash: string | null;
   emailVerificationCode: string | null;
   emailVerificationExpiresAt: string | null;
@@ -46,6 +48,7 @@ function toAuthRecord(row: {
   role: Role;
   maquisId: string | null;
   actif: boolean;
+  isComplete: boolean;
   motDePasseHash: string | null;
   emailVerificationCode: string | null;
   emailVerificationExpiresAt: Date | null;
@@ -62,6 +65,7 @@ function toAuthRecord(row: {
     role: row.role,
     maquisId: row.maquisId,
     actif: row.actif,
+    isComplete: row.isComplete,
     motDePasseHash: row.motDePasseHash,
     emailVerificationCode: row.emailVerificationCode,
     emailVerificationExpiresAt: row.emailVerificationExpiresAt

@@ -16,6 +16,14 @@ import { errorHandler } from "./middlewares/error.middleware.js";
 export function createApp(): express.Application {
   const app = express();
   const openApiSpec = buildOpenApiSpec();
+  const allowedOrigins = [
+    process.env.FRONTEND_URL,
+    process.env.REACT_APP_URL,
+    "http://localhost:5173",
+    "http://127.0.0.1:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:3000",
+  ].filter((origin): origin is string => Boolean(origin?.trim()));
 
   app.use(
     helmet({
@@ -29,7 +37,17 @@ export function createApp(): express.Application {
       },
     }),
   );
-  app.use(cors());
+  app.use(
+    cors({
+      origin(origin, callback) {
+        if (!origin || allowedOrigins.includes(origin)) {
+          callback(null, true);
+          return;
+        }
+        callback(new Error("CORS: origine non autorisee"));
+      },
+    }),
+  );
   app.use(express.json());
   if (env.isDev) {
     app.use(morgan("dev"));

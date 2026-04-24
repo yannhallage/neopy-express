@@ -15,6 +15,26 @@ export const Permission = {
   USERS_UPDATE_ANY: "users:update:any",
   USERS_UPDATE_SELF: "users:update:self",
   USERS_DELETE_ANY: "users:delete:any",
+  BUTTON_PROFIL: "button:profil",
+  BUTTON_COMMANDES: "button:commandes",
+  BUTTON_PANIER: "button:panier",
+  USER_READ_PANIER: "user:read:panier",
+  USER_UPDATE_PANIER: "user:update:panier",
+  USER_DELETE_PANIER: "user:delete:panier",
+  // USER_READ_HISTORIQUE: "user:read:historique",
+  // USER_UPDATE_HISTORIQUE: "user:update:historique",
+  // USER_DELETE_HISTORIQUE: "user:delete:historique",
+  // USER_READ_PARAMETRES: "user:read:parametres",
+  // USER_UPDATE_PARAMETRES: "user:update:parametres",
+  // USER_DELETE_PARAMETRES: "user:delete:parametres",
+  // BUTTON_PAYER: "button:payer",
+  BUTTON_HISTORIQUE: "button:historique",
+  BUTTON_PARAMETRES: "button:parametres",
+  USER_ISCOMPLETE: "user:iscomplete",
+  // BUTTON_DECONNEXION: "button:deconnexion",
+  // BUTTON_AIDE: "button:aide",
+  // BUTTON_CONTACT: "button:contact",
+  // BUTTON_MENTIONS_LEGLES: "button:mentions-legales",
 
   // Maquis
   MAQUIS_LIST: "maquis:list",
@@ -56,9 +76,17 @@ export const ALL_PERMISSIONS = Object.values(Permission) as readonly PermissionC
  * Clés stables pour l’UI (dropdown utilisateur, navigation). Préfixe `ui:` pour les distinguer des droits API.
  */
 export const UiPermission = {
-  MON_PROFIL: "mon-profil",
-  MES_COMMANDES: "mes-commandes",
-  CATALOGUE: "catalogue",
+  USER_PROFIL: "profil",
+  USER_COMMANDES: "commandes",
+  USER_COMPLETER_PROFIL: "completer-profil",
+  USER_PANIER: "panier",
+  // PAYER: "payer",
+  USER_HISTORIQUE: "historique",
+  PARAMETRES: "parametres",
+  // DECONNEXION: "deconnexion",
+  // AIDE: "aide",
+  // CONTACT: "contact",
+  // MENTIONS_LEGLES: "mentions-legales",
 
   MON_MAQUIS: "mon-maquis",
   CARTE_PLATS: "carte-plats",
@@ -81,20 +109,21 @@ export const ALL_UI_PERMISSIONS = Object.values(
  */
 export const ROLE_UI_DROPDOWN: Record<Role, readonly UiPermissionCode[]> = {
   CLIENT: [
-    UiPermission.MON_PROFIL,
-    UiPermission.MES_COMMANDES,
-    UiPermission.CATALOGUE,
+    UiPermission.USER_PROFIL,
+    UiPermission.USER_COMMANDES,
+    UiPermission.USER_PANIER,
+    UiPermission.USER_COMPLETER_PROFIL,
   ],
 
   GERANT: [
-    UiPermission.MON_PROFIL,
+    UiPermission.USER_PROFIL,
     UiPermission.MON_MAQUIS,
     UiPermission.CARTE_PLATS,
     UiPermission.COMMANDES_ETABLISSEMENT,
   ],
 
   ADMIN: [
-    UiPermission.MON_PROFIL,
+    UiPermission.USER_PROFIL,
     UiPermission.ADMIN_UTILISATEURS,
     UiPermission.ADMIN_MAQUIS,
     UiPermission.ADMIN_COMMANDES,
@@ -124,12 +153,24 @@ export const ROLE_PERMISSIONS: Record<Role, readonly PermissionCode[]> = {
     Permission.COMMANDES_READ_SELF,
     Permission.COMMANDES_UPDATE_SELF,
     Permission.COMMANDES_DELETE_SELF,
+
+    Permission.USER_READ_PANIER,
+    Permission.USER_UPDATE_PANIER,
+    Permission.USER_DELETE_PANIER,
+    Permission.USER_ISCOMPLETE,
+
+    Permission.BUTTON_COMMANDES,
+    Permission.BUTTON_PROFIL,
   ],
 
   GERANT: [
     Permission.USERS_READ_SELF,
     Permission.USERS_UPDATE_SELF,
-
+    
+    Permission.USER_READ_PANIER,
+    Permission.USER_UPDATE_PANIER,
+    Permission.USER_DELETE_PANIER,
+    Permission.USER_ISCOMPLETE,
     Permission.MAQUIS_LIST,
     Permission.MAQUIS_READ,
     Permission.MAQUIS_CREATE,
