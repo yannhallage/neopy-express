@@ -16,14 +16,27 @@ import { errorHandler } from "./middlewares/error.middleware.js";
 export function createApp(): express.Application {
   const app = express();
   const openApiSpec = buildOpenApiSpec();
-  const allowedOrigins = [
-    process.env.FRONTEND_URL,
-    process.env.REACT_APP_URL,
-    "http://localhost:5173",
-    "http://127.0.0.1:5173",
-    "http://localhost:3000",
-    "http://127.0.0.1:3000",
-  ].filter((origin): origin is string => Boolean(origin?.trim()));
+  const normalizeOrigin = (value: string): string =>
+    value.trim().replace(/\/+$/, "").toLowerCase();
+  const fromEnv = (value: string | undefined): string[] =>
+    (value ?? "")
+      .split(",")
+      .map((v) => v.trim())
+      .filter((v) => v.length > 0);
+
+  const allowedOrigins = new Set(
+    [
+      ...fromEnv(process.env.FRONTEND_URL),
+      ...fromEnv(process.env.REACT_APP_URL),
+      "http://localhost:5173",
+      "http://127.0.0.1:5173",
+      "http://localhost:3000",
+      "http://127.0.0.1:3000",
+      "http://127.0.0.1:4000",
+      "http://localhost:4000",
+    ].map(normalizeOrigin),
+  );
+  const localDevOriginRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 
   app.use(
     helmet({
@@ -40,11 +53,19 @@ export function createApp(): express.Application {
   app.use(
     cors({
       origin(origin, callback) {
-        if (!origin || allowedOrigins.includes(origin)) {
+        if (!origin) {
           callback(null, true);
           return;
         }
-        callback(new Error("CORS: origine non autorisee"));
+        const normalized = normalizeOrigin(origin);
+        if (
+          allowedOrigins.has(normalized) ||
+          (env.isDev && localDevOriginRegex.test(normalized))
+        ) {
+          callback(null, true);
+          return;
+        }
+        callback(new Error(`CORS: origine non autorisee (${origin})`));
       },
     }),
   );
