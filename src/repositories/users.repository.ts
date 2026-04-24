@@ -3,6 +3,62 @@ import type { User } from "../models/user.model.js";
 import { prisma } from "../lib/prisma.js";
 import { rethrowPrisma } from "../utils/prismaErrors.js";
 
+const authSelect = {
+  id: true,
+  email: true,
+  telephone: true,
+  nom: true,
+  prenom: true,
+  role: true,
+  maquisId: true,
+  actif: true,
+  motDePasseHash: true,
+  createdAt: true,
+  updatedAt: true,
+} as const;
+
+export type UserAuthRecord = {
+  id: string;
+  email: string;
+  telephone: string | null;
+  nom: string;
+  prenom: string | null;
+  role: Role;
+  maquisId: string | null;
+  actif: boolean;
+  motDePasseHash: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+function toAuthRecord(row: {
+  id: string;
+  email: string;
+  telephone: string | null;
+  nom: string;
+  prenom: string | null;
+  role: Role;
+  maquisId: string | null;
+  actif: boolean;
+  motDePasseHash: string | null;
+  createdAt: Date;
+  updatedAt: Date;
+}): UserAuthRecord {
+  return {
+    id: row.id,
+    email: row.email,
+    telephone: row.telephone,
+    nom: row.nom,
+    prenom: row.prenom,
+    role: row.role,
+    maquisId: row.maquisId,
+    actif: row.actif,
+    motDePasseHash: row.motDePasseHash,
+    createdAt: row.createdAt.toISOString(),
+    updatedAt: row.updatedAt.toISOString(),
+  };
+}
+
 const userSelect = {
   id: true,
   email: true,
@@ -67,6 +123,14 @@ export const usersRepository = {
     return row ? toDomain(row) : null;
   },
 
+  async findAuthByEmail(email: string): Promise<UserAuthRecord | null> {
+    const row = await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+      select: authSelect,
+    });
+    return row ? toAuthRecord(row) : null;
+  },
+
   async create(data: {
     email: string;
     nom: string;
@@ -74,6 +138,7 @@ export const usersRepository = {
     telephone?: string | null;
     role?: Role;
     maquisId?: string | null;
+    motDePasseHash?: string | null;
   }): Promise<User> {
     try {
       const row = await prisma.user.create({
@@ -84,6 +149,9 @@ export const usersRepository = {
           ...(data.telephone !== undefined && { telephone: data.telephone }),
           ...(data.role !== undefined ? { role: data.role } : {}),
           ...(data.maquisId !== undefined && { maquisId: data.maquisId }),
+          ...(data.motDePasseHash !== undefined && {
+            motDePasseHash: data.motDePasseHash,
+          }),
         },
         select: userSelect,
       });

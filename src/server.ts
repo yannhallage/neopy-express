@@ -1,5 +1,10 @@
 import { createApp } from "./app.js";
 import { env } from "./config/env.js";
+
+if (!env.isDev && !env.jwtSecret) {
+  console.error("JWT_SECRET est obligatoire lorsque NODE_ENV n’est pas « development ».");
+  process.exit(1);
+}
 import {
   connectDatabase,
   disconnectDatabase,

@@ -15,6 +15,10 @@ export const openApiDefinition = {
   ],
   tags: [
     { name: "Système", description: "État du service" },
+    {
+      name: "Authentification",
+      description: "Connexion JWT, inscription client, profil connecté",
+    },
     { name: "Utilisateurs", description: "Comptes clients, gérants, admin" },
     { name: "Maquis", description: "Points de vente" },
     { name: "Plats", description: "Carte (garba, attiéké, etc.)" },
@@ -22,6 +26,14 @@ export const openApiDefinition = {
     { name: "Documentation", description: "Spécification machine" },
   ],
   components: {
+    securitySchemes: {
+      bearerAuth: {
+        type: "http",
+        scheme: "bearer",
+        bearerFormat: "JWT",
+        description: "JWT obtenu via POST /auth/login ou /auth/register",
+      },
+    },
     schemas: {
       Role: {
         type: "string",
@@ -177,6 +189,42 @@ export const openApiDefinition = {
             type: "array",
             items: { $ref: "#/components/schemas/LigneCommande" },
           },
+        },
+      },
+      LoginRequest: {
+        type: "object",
+        required: ["email", "password"],
+        properties: {
+          email: { type: "string", format: "email" },
+          password: { type: "string", format: "password" },
+        },
+      },
+      RegisterRequest: {
+        type: "object",
+        required: ["email", "password", "nom"],
+        properties: {
+          email: { type: "string", format: "email" },
+          password: { type: "string", format: "password", minLength: 8 },
+          nom: { type: "string" },
+          prenom: { type: "string" },
+          telephone: { type: "string" },
+        },
+      },
+      AuthSession: {
+        type: "object",
+        required: ["accessToken", "tokenType", "user"],
+        properties: {
+          accessToken: { type: "string" },
+          tokenType: { type: "string", example: "Bearer" },
+          user: { $ref: "#/components/schemas/User" },
+        },
+      },
+      SuccessAuth: {
+        type: "object",
+        required: ["success", "data"],
+        properties: {
+          success: { type: "boolean", example: true },
+          data: { $ref: "#/components/schemas/AuthSession" },
         },
       },
       SuccessUser: {
