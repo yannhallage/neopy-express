@@ -23,33 +23,6 @@ export function createApp(): express.Application {
       options?: Record<string, unknown>,
     ) => express.RequestHandler);
   const openApiSpec = buildOpenApiSpec();
-  const normalizeOrigin = (value: string): string =>
-    value.trim().replace(/\/+$/, "").toLowerCase();
-  const fromEnv = (value: string | undefined): string[] =>
-    (value ?? "")
-      .split(",")
-      .map((v) => v.trim())
-      .filter((v) => v.length > 0);
-
-  const allowedOrigins = new Set(
-    [
-      ...fromEnv(process.env.FRONTEND_URL),
-      ...fromEnv(process.env.REACT_APP_URL),
-      // Liste des origines autorisées pour CORS :
-      // - http://localhost:5173 et http://127.0.0.1:5173 : développement local (Vite front-end)
-      // - http://localhost:3000 et http://127.0.0.1:3000 : développement local (React ou autres apps front-end)
-      // - http://127.0.0.1:4000 et http://localhost:4000 : accès API en local sur différents ports
-      // - https://neo-ga.vercel.app : déploiement de l'application front-end en production sur Vercel
-      "http://localhost:5173",
-      "http://127.0.0.1:5173",
-      "http://localhost:3000",
-      "http://127.0.0.1:3000",
-      "http://127.0.0.1:4000",
-      "https://neo-ga.vercel.app",
-      "http://localhost:4000",
-    ].map(normalizeOrigin),
-  );
-  const localDevOriginRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 
   app.use(
     helmetFactory({
@@ -65,21 +38,7 @@ export function createApp(): express.Application {
   );
   app.use(
     cors({
-      origin(origin, callback) {
-        if (!origin) {
-          callback(null, true);
-          return;
-        }
-        const normalized = normalizeOrigin(origin);
-        if (
-          allowedOrigins.has(normalized) ||
-          (env.isDev && localDevOriginRegex.test(normalized))
-        ) {
-          callback(null, true);
-          return;
-        }
-        callback(new Error(`CORS: origine non autorisee (${origin})`));
-      },
+      origin: true,
     }),
   );
   app.use(express.json());
