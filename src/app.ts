@@ -1,6 +1,6 @@
 import express from "express";
 import cors from "cors";
-import helmet from "helmet";
+import helmetImport from "helmet";
 import morgan from "morgan";
 import { env } from "./config/env.js";
 import {
@@ -15,6 +15,13 @@ import { errorHandler } from "./middlewares/error.middleware.js";
 
 export function createApp(): express.Application {
   const app = express();
+  const helmetFactory =
+    (helmetImport as unknown as {
+      default?: (options?: Record<string, unknown>) => express.RequestHandler;
+    }).default ??
+    (helmetImport as unknown as (
+      options?: Record<string, unknown>,
+    ) => express.RequestHandler);
   const openApiSpec = buildOpenApiSpec();
   const normalizeOrigin = (value: string): string =>
     value.trim().replace(/\/+$/, "").toLowerCase();
@@ -39,7 +46,7 @@ export function createApp(): express.Application {
   const localDevOriginRegex = /^https?:\/\/(localhost|127\.0\.0\.1)(:\d+)?$/i;
 
   app.use(
-    helmet({
+    helmetFactory({
       contentSecurityPolicy: {
         directives: {
           defaultSrc: ["'self'"],
