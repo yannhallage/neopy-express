@@ -1,10 +1,24 @@
 import { HttpError } from "../types/errors.js";
 import { platsRepository } from "../repositories/plats.repository.js";
 import { maquisRepository } from "../repositories/maquis.repository.js";
+import { usersRepository } from "../repositories/users.repository.js";
 
 export const platsService = {
   async list(maquisId?: string) {
-    return platsRepository.findAll(maquisId);
+    return platsRepository.findAll({ maquisId });
+  },
+
+  async listAll() {
+    return platsRepository.findAll();
+  },
+
+  async listByUser(userId: string) {
+    const user = await usersRepository.findById(userId);
+    if (!user) throw new HttpError(404, "Utilisateur introuvable");
+
+    const maquisIds = await maquisRepository.findIdsByProprietaireId(userId);
+    if (maquisIds.length === 0) return [];
+    return platsRepository.findAll({ maquisIds });
   },
 
   async getById(id: string) {
@@ -20,6 +34,7 @@ export const platsService = {
     prix: number | string;
     imageUrl?: string | null;
     disponible?: boolean;
+    supplements?: string[];
   }) {
     const maquis = await maquisRepository.findById(data.maquisId);
     if (!maquis) throw new HttpError(404, "Maquis introuvable");
@@ -35,6 +50,7 @@ export const platsService = {
       imageUrl: string | null;
       disponible: boolean;
       maquisId: string;
+      supplements: string[];
     }>,
   ) {
     await this.getById(id);

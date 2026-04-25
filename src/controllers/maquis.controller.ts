@@ -5,6 +5,21 @@ import { HttpError } from "../types/errors.js";
 import type { CreateMaquisBody, UpdateMaquisBody } from "../validators/maquis.validator.js";
 
 export const maquisController = {
+  async listAll(_req: Request, res: Response): Promise<void> {
+    const data = await maquisService.listAll();
+    res.json({ success: true, data });
+  },
+
+  async listByUser(req: Request, res: Response): Promise<void> {
+    const userId = req.params.userId;
+    if (!userId) {
+      res.status(400).json({ success: false, message: "Identifiant utilisateur manquant" });
+      return;
+    }
+    const data = await maquisService.listByUser(userId);
+    res.json({ success: true, data });
+  },
+
   async list(_req: Request, res: Response): Promise<void> {
     const data = await maquisService.list();
     res.json({ success: true, data });
@@ -21,8 +36,12 @@ export const maquisController = {
   },
 
   async create(req: Request, res: Response): Promise<void> {
+    if (!req.user) {
+      res.status(401).json({ success: false, message: "Authentification requise" });
+      return;
+    }
     const body = req.body as CreateMaquisBody;
-    const data = await maquisService.create(body);
+    const data = await maquisService.create(body, req.user.id);
     res.status(201).json({ success: true, data });
   },
 

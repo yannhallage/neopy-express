@@ -6,45 +6,11 @@ import { usersRepository } from "../repositories/users.repository.js";
 import { signAccessToken } from "../lib/jwt.js";
 import { mailService } from "./mail.service.js";
 import { HttpError } from "../types/errors.js";
-import {
-  Permission,
-  ROLE_PERMISSIONS,
-  ROLE_UI_DROPDOWN,
-  UiPermission,
-  type PermissionCode,
-  type UiPermissionCode,
-} from "../config/permissions.js";
 
 const BCRYPT_ROUNDS = 10;
 const EMAIL_CONFIRMATION_TTL_MS = 15 * 60 * 1000;
 
 const INVALID_LOGIN = "Email ou mot de passe incorrect.";
-
-function permissionsForProfile(
-  role: UserAuthRecord["role"],
-  isComplete: boolean,
-): PermissionCode[] {
-  const base = [...ROLE_PERMISSIONS[role]];
-  if (isComplete) {
-    return base.filter((code) => code !== Permission.USER_ISCOMPLETE);
-  }
-  return base.includes(Permission.USER_ISCOMPLETE)
-    ? base
-    : [...base, Permission.USER_ISCOMPLETE];
-}
-
-function uiPermissionsForProfile(
-  role: UserAuthRecord["role"],
-  isComplete: boolean,
-): UiPermissionCode[] {
-  const base = [...ROLE_UI_DROPDOWN[role]];
-  if (isComplete) {
-    return base.filter((code) => code !== UiPermission.USER_COMPLETER_PROFIL);
-  }
-  return base.includes(UiPermission.USER_COMPLETER_PROFIL)
-    ? base
-    : [...base, UiPermission.USER_COMPLETER_PROFIL];
-}
 
 function toPublicUser(row: UserAuthRecord): User {
   return {
@@ -56,6 +22,7 @@ function toPublicUser(row: UserAuthRecord): User {
     role: row.role,
     maquisId: row.maquisId,
     actif: row.actif,
+    isComplete: row.isComplete,
     createdAt: row.createdAt,
     updatedAt: row.updatedAt,
   };
@@ -89,8 +56,6 @@ export const authService = {
       accessToken,
       tokenType: "Bearer" as const,
       user: toPublicUser(row),
-      permissions: permissionsForProfile(row.role, row.isComplete),
-      uiPermissions: uiPermissionsForProfile(row.role, row.isComplete),
     };
   },
 
@@ -173,8 +138,6 @@ export const authService = {
       message: "Email confirme avec succes.",
       accessToken,
       tokenType: "Bearer" as const,
-      permissions: permissionsForProfile(user.role, user.isComplete),
-      uiPermissions: uiPermissionsForProfile(user.role, user.isComplete),
     };
   },
 };

@@ -36,9 +36,25 @@ export const maquisRepository = {
     return rows.map(toDomain);
   },
 
+  async findByProprietaireId(proprietaireId: string): Promise<Maquis[]> {
+    const rows = await prisma.maquis.findMany({
+      where: { proprietaireId },
+      orderBy: { createdAt: "desc" },
+    });
+    return rows.map(toDomain);
+  },
+
   async findById(id: string): Promise<Maquis | null> {
     const row = await prisma.maquis.findUnique({ where: { id } });
     return row ? toDomain(row) : null;
+  },
+
+  async findIdsByProprietaireId(proprietaireId: string): Promise<string[]> {
+    const rows = await prisma.maquis.findMany({
+      where: { proprietaireId },
+      select: { id: true },
+    });
+    return rows.map((row) => row.id);
   },
 
   async create(data: {

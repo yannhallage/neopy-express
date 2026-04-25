@@ -8,6 +8,7 @@ const createPlatBodySchema = z.object({
   prix: z.coerce.number().positive("Le prix doit être positif"),
   imageUrl: z.string().max(2000).optional().nullable(),
   disponible: z.boolean().optional(),
+  supplements: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
 });
 
 export type CreatePlatBody = z.infer<typeof createPlatBodySchema>;
@@ -20,6 +21,7 @@ const updatePlatBodySchema = z
     prix: z.coerce.number().positive().optional(),
     imageUrl: z.string().max(2000).optional().nullable(),
     disponible: z.boolean().optional(),
+    supplements: z.array(z.string().trim().min(1).max(80)).max(20).optional(),
   })
   .refine((o) => Object.keys(o).length > 0, {
     message: "Au moins un champ à mettre à jour est requis",

@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { commandesController } from "../controllers/commandes.controller.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
   validateCreateCommande,
   validateUpdateCommande,
@@ -48,6 +49,36 @@ export const commandesRouter = Router();
  *               $ref: '#/components/schemas/SuccessCommande'
  *       400:
  *         $ref: '#/components/responses/ErreurValidation'
+ * /commandes/all:
+ *   get:
+ *     tags: [Commandes]
+ *     summary: Lister toutes les commandes (ADMIN/DEBUG)
+ *     operationId: listAllCommandes
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessCommandeList'
+ * /commandes/user/{userId}:
+ *   get:
+ *     tags: [Commandes]
+ *     summary: Lister les commandes d'un utilisateur par son identifiant
+ *     operationId: listCommandesByUser
+ *     parameters:
+ *       - in: path
+ *         name: userId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessCommandeList'
+ *       404:
+ *         $ref: '#/components/responses/ErreurIntrouvable'
  * /commandes/{id}:
  *   get:
  *     tags: [Commandes]
@@ -103,7 +134,55 @@ export const commandesRouter = Router();
  *       204:
  *         description: Supprimé
  */
-commandesRouter.get("/", asyncHandler(commandesController.list));
+
+commandesRouter.get("/", requireAuth, asyncHandler(commandesController.list));
+
+commandesRouter.get(
+  "/all",
+  /**
+   * @openapi
+   * /commandes/all:
+   *   get:
+   *     tags: [Commandes]
+   *     summary: Lister toutes les commandes (ADMIN/DEBUG)
+   *     operationId: listAllCommandes
+   *     responses:
+   *       200:
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessCommandeList'
+   */
+  asyncHandler(commandesController.listAll)
+);
+
+commandesRouter.get(
+  "/user/:userId",
+  /**
+   * @openapi
+   * /commandes/user/{userId}:
+   *   get:
+   *     tags: [Commandes]
+   *     summary: Lister les commandes d'un utilisateur par son identifiant
+   *     operationId: listCommandesByUser
+   *     parameters:
+   *       - in: path
+   *         name: userId
+   *         required: true
+   *         schema:
+   *           type: string
+   *     responses:
+   *       200:
+   *         content:
+   *           application/json:
+   *             schema:
+   *               $ref: '#/components/schemas/SuccessCommandeList'
+   *       404:
+   *         $ref: '#/components/responses/ErreurIntrouvable'
+   */
+  asyncHandler(commandesController.listByUser)
+);
+
 commandesRouter.get("/:id", asyncHandler(commandesController.getById));
 commandesRouter.post(
   "/",

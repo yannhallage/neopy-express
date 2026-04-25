@@ -86,6 +86,7 @@ const userSelect = {
   role: true,
   maquisId: true,
   actif: true,
+  isComplete: true,
   createdAt: true,
   updatedAt: true,
 } as const;
@@ -99,6 +100,7 @@ function toDomain(row: {
   role: Role;
   maquisId: string | null;
   actif: boolean;
+  isComplete: boolean;
   createdAt: Date;
   updatedAt: Date;
 }): User {
@@ -111,6 +113,7 @@ function toDomain(row: {
     role: row.role,
     maquisId: row.maquisId,
     actif: row.actif,
+    isComplete: row.isComplete,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
@@ -203,6 +206,7 @@ export const usersRepository = {
       role: Role;
       maquisId: string | null;
       actif: boolean;
+      isComplete: boolean;
       emailVerificationCode: string | null;
       emailVerificationExpiresAt: Date | null;
       emailVerifiedAt: Date | null;
@@ -219,6 +223,7 @@ export const usersRepository = {
           ...(data.role !== undefined && { role: data.role }),
           ...(data.maquisId !== undefined && { maquisId: data.maquisId }),
           ...(data.actif !== undefined && { actif: data.actif }),
+          ...(data.isComplete !== undefined && { isComplete: data.isComplete }),
           ...(data.emailVerificationCode !== undefined && {
             emailVerificationCode: data.emailVerificationCode,
           }),

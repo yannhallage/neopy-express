@@ -89,7 +89,7 @@ export const authRouter = Router();
  *                   example: true
  *                 data:
  *                   type: object
- *                   required: [message, permissions]
+ *                   required: [message, accessToken, tokenType]
  *                   properties:
  *                     message:
  *                       type: string
@@ -98,10 +98,6 @@ export const authRouter = Router();
  *                     tokenType:
  *                       type: string
  *                       example: Bearer
- *                     permissions:
- *                       type: array
- *                       items:
- *                         type: string
  *       400:
  *         $ref: '#/components/responses/ErreurValidation'
  * /auth/me:

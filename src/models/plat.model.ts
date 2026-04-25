@@ -6,6 +6,7 @@ export interface Plat {
   prix: string;
   imageUrl: string | null;
   disponible: boolean;
+  supplements: string[];
   createdAt: string;
   updatedAt: string;
 }

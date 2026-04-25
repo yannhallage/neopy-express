@@ -7,6 +7,16 @@ export const maquisService = {
     return maquisRepository.findAll();
   },
 
+  async listAll() {
+    return maquisRepository.findAll();
+  },
+
+  async listByUser(userId: string) {
+    const user = await usersRepository.findById(userId);
+    if (!user) throw new HttpError(404, "Utilisateur introuvable");
+    return maquisRepository.findByProprietaireId(userId);
+  },
+
   async getById(id: string) {
     const m = await maquisRepository.findById(id);
     if (!m) throw new HttpError(404, "Maquis introuvable");
@@ -21,11 +31,13 @@ export const maquisService = {
     telephone?: string | null;
     imageUrl?: string | null;
     ouvert?: boolean;
-    proprietaireId: string;
-  }) {
-    const owner = await usersRepository.findById(data.proprietaireId);
+  }, userId: string) {
+    const owner = await usersRepository.findById(userId);
     if (!owner) throw new HttpError(404, "Propriétaire introuvable");
-    return maquisRepository.create(data);
+    return maquisRepository.create({
+      ...data,
+      proprietaireId: userId,
+    });
   },
 
   async update(

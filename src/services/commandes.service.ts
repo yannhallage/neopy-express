@@ -7,8 +7,41 @@ import { platsRepository } from "../repositories/plats.repository.js";
 import type { CreateCommandeBody } from "../validators/commandes.validator.js";
 
 export const commandesService = {
-  async list(filters: { userId?: string; maquisId?: string }) {
-    return commandesRepository.findAll(filters);
+  async listAll() {
+    return commandesRepository.findAll({});
+  },
+
+  async listByUser(userId: string) {
+    const user = await usersRepository.findById(userId);
+    if (!user) throw new HttpError(404, "Utilisateur introuvable");
+    return commandesRepository.findAll({ userId });
+  },
+
+  async list(
+    filters: { userId?: string; maquisId?: string; maquisIds?: string[] },
+    requester: { id: string; role: "CLIENT" | "GERANT" | "ADMIN" },
+  ) {
+    if (requester.role === "ADMIN") {
+      return commandesRepository.findAll(filters);
+    }
+
+    if (requester.role === "CLIENT") {
+      return commandesRepository.findAll({
+        userId: requester.id,
+        maquisId: filters.maquisId,
+      });
+    }
+
+    const maquisIds = await maquisRepository.findIdsByProprietaireId(requester.id);
+    if (maquisIds.length === 0) return [];
+
+    if (filters.maquisId && !maquisIds.includes(filters.maquisId)) {
+      throw new HttpError(403, "Accès interdit à ce maquis");
+    }
+
+    return commandesRepository.findAll({
+      maquisIds: filters.maquisId ? [filters.maquisId] : maquisIds,
+    });
   },
 
   async getById(id: string) {

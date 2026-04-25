@@ -67,11 +67,16 @@ const commandeInclude = {
 } as const;
 
 export const commandesRepository = {
-  async findAll(filters: { userId?: string; maquisId?: string }): Promise<Commande[]> {
+  async findAll(filters: {
+    userId?: string;
+    maquisId?: string;
+    maquisIds?: string[];
+  }): Promise<Commande[]> {
     const rows = await prisma.commande.findMany({
       where: {
         ...(filters.userId && { userId: filters.userId }),
         ...(filters.maquisId && { maquisId: filters.maquisId }),
+        ...(filters.maquisIds && { maquisId: { in: filters.maquisIds } }),
       },
       include: commandeInclude,
       orderBy: { createdAt: "desc" },

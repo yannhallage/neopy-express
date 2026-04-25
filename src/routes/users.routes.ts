@@ -1,7 +1,9 @@
 import { Router } from "express";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { usersController } from "../controllers/users.controller.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 import {
+  validateCompleteProfile,
   validateCreateUser,
   validateUpdateUser,
 } from "../validators/users.validator.js";
@@ -102,8 +104,47 @@ export const usersRouter = Router();
  *         description: Supprimé
  *       404:
  *         $ref: '#/components/responses/ErreurIntrouvable'
+ * /users/completer-profil:
+ *   patch:
+ *     tags: [Utilisateurs]
+ *     summary: Compléter le profil (utilisateur connecté)
+ *     operationId: completeUserProfile
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required: [nom, prenom, telephone]
+ *             properties:
+ *               nom: { type: string }
+ *               prenom: { type: string }
+ *               telephone: { type: string }
+ *               email: { type: string, format: email }
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessUser'
+ *       400:
+ *         $ref: '#/components/responses/ErreurValidation'
+ *       401:
+ *         description: Non authentifié
+ *       404:
+ *         $ref: '#/components/responses/ErreurIntrouvable'
+ *       409:
+ *         $ref: '#/components/responses/ErreurConflit'
  */
 usersRouter.get("/", asyncHandler(usersController.list));
+usersRouter.patch(
+  "/completer-profil",
+  requireAuth,
+  validateCompleteProfile,
+  asyncHandler(usersController.completeProfile),
+);
 usersRouter.get("/:id", asyncHandler(usersController.getById));
 usersRouter.post(
   "/",

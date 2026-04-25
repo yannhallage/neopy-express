@@ -11,6 +11,7 @@ function toDomain(row: {
   prix: Prisma.Decimal;
   imageUrl: string | null;
   disponible: boolean;
+  supplements: string[];
   createdAt: Date;
   updatedAt: Date;
 }): Plat {
@@ -22,15 +23,22 @@ function toDomain(row: {
     prix: row.prix.toString(),
     imageUrl: row.imageUrl,
     disponible: row.disponible,
+    supplements: row.supplements,
     createdAt: row.createdAt.toISOString(),
     updatedAt: row.updatedAt.toISOString(),
   };
 }
 
 export const platsRepository = {
-  async findAll(maquisId?: string): Promise<Plat[]> {
+  async findAll(filters?: { maquisId?: string; maquisIds?: string[] }): Promise<Plat[]> {
+    const where =
+      filters?.maquisIds !== undefined
+        ? { maquisId: { in: filters.maquisIds } }
+        : filters?.maquisId
+          ? { maquisId: filters.maquisId }
+          : undefined;
     const rows = await prisma.plat.findMany({
-      where: maquisId ? { maquisId } : undefined,
+      where,
       orderBy: { createdAt: "desc" },
     });
     return rows.map(toDomain);
@@ -56,6 +64,7 @@ export const platsRepository = {
     prix: number | string;
     imageUrl?: string | null;
     disponible?: boolean;
+    supplements?: string[];
   }): Promise<Plat> {
     try {
       const row = await prisma.plat.create({
@@ -66,6 +75,7 @@ export const platsRepository = {
           ...(data.description !== undefined && { description: data.description }),
           ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
           ...(data.disponible !== undefined && { disponible: data.disponible }),
+          ...(data.supplements !== undefined && { supplements: data.supplements }),
         },
       });
       return toDomain(row);
@@ -83,6 +93,7 @@ export const platsRepository = {
       imageUrl: string | null;
       disponible: boolean;
       maquisId: string;
+      supplements: string[];
     }>,
   ): Promise<Plat> {
     try {
@@ -95,6 +106,7 @@ export const platsRepository = {
           ...(data.imageUrl !== undefined && { imageUrl: data.imageUrl }),
           ...(data.disponible !== undefined && { disponible: data.disponible }),
           ...(data.maquisId !== undefined && { maquisId: data.maquisId }),
+          ...(data.supplements !== undefined && { supplements: data.supplements }),
         },
       });
       return toDomain(row);

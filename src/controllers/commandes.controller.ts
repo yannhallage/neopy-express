@@ -17,8 +17,28 @@ function filtersFromQuery(req: Request): { userId?: string; maquisId?: string } 
 }
 
 export const commandesController = {
+  async listAll(_req: Request, res: Response): Promise<void> {
+    const data = await commandesService.listAll();
+    res.json({ success: true, data });
+  },
+
+  async listByUser(req: Request, res: Response): Promise<void> {
+    const userId = req.params.userId;
+    if (!userId) {
+      res.status(400).json({ success: false, message: "Identifiant utilisateur manquant" });
+      return;
+    }
+    const data = await commandesService.listByUser(userId);
+    res.json({ success: true, data });
+  },
+
   async list(req: Request, res: Response): Promise<void> {
-    const data = await commandesService.list(filtersFromQuery(req));
+    const requester = req.user;
+    if (!requester) {
+      res.status(401).json({ success: false, message: "Non authentifié." });
+      return;
+    }
+    const data = await commandesService.list(filtersFromQuery(req), requester);
     res.json({ success: true, data });
   },
 

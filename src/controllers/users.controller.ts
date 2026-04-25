@@ -1,6 +1,10 @@
 import type { Request, Response } from "express";
 import { usersService } from "../services/users.service.js";
-import type { CreateUserBody, UpdateUserBody } from "../validators/users.validator.js";
+import type {
+  CompleteProfileBody,
+  CreateUserBody,
+  UpdateUserBody,
+} from "../validators/users.validator.js";
 
 export const usersController = {
   async list(_req: Request, res: Response): Promise<void> {
@@ -32,6 +36,17 @@ export const usersController = {
     }
     const body = req.body as UpdateUserBody;
     const user = await usersService.updateUser(id, body);
+    res.json({ success: true, data: user });
+  },
+
+  async completeProfile(req: Request, res: Response): Promise<void> {
+    const userId = req.user?.id;
+    if (!userId) {
+      res.status(401).json({ success: false, message: "Non authentifié." });
+      return;
+    }
+    const body = req.body as CompleteProfileBody;
+    const user = await usersService.completeProfile(userId, body);
     res.json({ success: true, data: user });
   },
 

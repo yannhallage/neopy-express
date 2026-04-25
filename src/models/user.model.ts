@@ -9,6 +9,7 @@ export interface User {
   role: Role;
   maquisId: string | null;
   actif: boolean;
+  isComplete: boolean;
   createdAt: string;
   updatedAt: string;
 }

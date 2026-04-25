@@ -1,5 +1,6 @@
 import { Router } from "express";
 import { maquisController } from "../controllers/maquis.controller.js";
+import { requireAuth } from "../middlewares/auth.middleware.js";
 import { parseSingleImageUpload } from "../middlewares/uploadImage.middleware.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 import {
@@ -132,6 +133,8 @@ export const maquisRouter = Router();
  *         description: Cloudinary non configuré
  */
 maquisRouter.get("/", asyncHandler(maquisController.list));
+maquisRouter.get("/all", asyncHandler(maquisController.listAll));
+maquisRouter.get("/user/:userId", asyncHandler(maquisController.listByUser));
 maquisRouter.post(
   "/:id/image",
   parseSingleImageUpload,
@@ -140,6 +143,7 @@ maquisRouter.post(
 maquisRouter.get("/:id", asyncHandler(maquisController.getById));
 maquisRouter.post(
   "/",
+  requireAuth,
   validateCreateMaquis,
   asyncHandler(maquisController.create),
 );

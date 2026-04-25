@@ -9,7 +9,6 @@ const createMaquisBodySchema = z.object({
   telephone: z.string().max(32).optional().nullable(),
   imageUrl: z.string().max(2000).optional().nullable(),
   ouvert: z.boolean().optional(),
-  proprietaireId: z.string().min(1),
 });
 
 export type CreateMaquisBody = z.infer<typeof createMaquisBodySchema>;

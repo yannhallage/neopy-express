@@ -138,6 +138,8 @@ export const platsRouter = Router();
  *         description: Cloudinary non configuré
  */
 platsRouter.get("/", asyncHandler(platsController.list));
+platsRouter.get("/all", asyncHandler(platsController.listAll));
+platsRouter.get("/user/:userId", asyncHandler(platsController.listByUser));
 platsRouter.post(
   "/:id/image",
   parseSingleImageUpload,

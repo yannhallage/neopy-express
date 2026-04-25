@@ -10,6 +10,21 @@ function maquisIdFromQuery(req: Request): string | undefined {
 }
 
 export const platsController = {
+  async listAll(_req: Request, res: Response): Promise<void> {
+    const data = await platsService.listAll();
+    res.json({ success: true, data });
+  },
+
+  async listByUser(req: Request, res: Response): Promise<void> {
+    const userId = req.params.userId;
+    if (!userId) {
+      res.status(400).json({ success: false, message: "Identifiant utilisateur manquant" });
+      return;
+    }
+    const data = await platsService.listByUser(userId);
+    res.json({ success: true, data });
+  },
+
   async list(req: Request, res: Response): Promise<void> {
     const data = await platsService.list(maquisIdFromQuery(req));
     res.json({ success: true, data });

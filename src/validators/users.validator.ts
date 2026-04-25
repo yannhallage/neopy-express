@@ -38,6 +38,16 @@ const updateUserBodySchema = z
 
 export type UpdateUserBody = z.infer<typeof updateUserBodySchema>;
 
+/** Corps pour finaliser le profil connecté (isComplete passera à true). */
+const completeProfileBodySchema = z.object({
+  nom: z.string().min(1, "Le nom est requis").max(120),
+  prenom: z.string().min(1, "Le prénom est requis").max(120),
+  telephone: z.string().min(1, "Le téléphone est requis").max(32),
+  email: z.string().email("Email invalide").optional(),
+});
+
+export type CompleteProfileBody = z.infer<typeof completeProfileBodySchema>;
+
 function parseFail(res: Response, parsed: z.SafeParseError<unknown>): void {
   const message = parsed.error.issues.map((e) => e.message).join(", ");
   res.status(400).json({ success: false, message });
@@ -63,6 +73,20 @@ export function validateUpdateUser(
   next: NextFunction,
 ): void {
   const parsed = updateUserBodySchema.safeParse(req.body);
+  if (!parsed.success) {
+    parseFail(res, parsed);
+    return;
+  }
+  req.body = parsed.data;
+  next();
+}
+
+export function validateCompleteProfile(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void {
+  const parsed = completeProfileBodySchema.safeParse(req.body);
   if (!parsed.success) {
     parseFail(res, parsed);
     return;

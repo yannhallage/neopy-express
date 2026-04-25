@@ -36,6 +36,7 @@ export const usersService = {
       role: Role;
       maquisId: string | null;
       actif: boolean;
+      isComplete: boolean;
     }>,
   ) {
     await this.getUserById(id);
@@ -46,6 +47,27 @@ export const usersService = {
       }
     }
     return usersRepository.update(id, data);
+  },
+
+  async completeProfile(
+    userId: string,
+    data: { nom: string; prenom: string; telephone: string; email?: string },
+  ) {
+    await this.getUserById(userId);
+    const email = data.email?.toLowerCase();
+    if (email) {
+      const other = await usersRepository.findByEmail(email);
+      if (other && other.id !== userId) {
+        throw new HttpError(409, "Cet email est déjà utilisé");
+      }
+    }
+    return usersRepository.update(userId, {
+      nom: data.nom,
+      prenom: data.prenom,
+      telephone: data.telephone,
+      ...(email !== undefined && { email }),
+      isComplete: true,
+    });
   },
 
   async deleteUser(id: string) {
