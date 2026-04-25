@@ -41,6 +41,17 @@ export const maquisRouter = Router();
  *               $ref: '#/components/schemas/SuccessMaquis'
  *       400:
  *         $ref: '#/components/responses/ErreurValidation'
+ * /maquis/dashboard:
+ *   get:
+ *     tags: [Maquis]
+ *     summary: Dashboard maquis (liste complète)
+ *     operationId: listMaquisDashboard
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessMaquisList'
  * /maquis/{id}:
  *   get:
  *     tags: [Maquis]
@@ -134,6 +145,7 @@ export const maquisRouter = Router();
  */
 maquisRouter.get("/", asyncHandler(maquisController.list));
 maquisRouter.get("/all", asyncHandler(maquisController.listAll));
+maquisRouter.get("/dashboard", asyncHandler(maquisController.listAll));
 maquisRouter.get("/user/:userId", asyncHandler(maquisController.listByUser));
 maquisRouter.post(
   "/:id/image",

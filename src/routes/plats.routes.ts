@@ -46,6 +46,17 @@ export const platsRouter = Router();
  *               $ref: '#/components/schemas/SuccessPlat'
  *       400:
  *         $ref: '#/components/responses/ErreurValidation'
+ * /plats/dashboard:
+ *   get:
+ *     tags: [Plats]
+ *     summary: Dashboard plats (liste complète)
+ *     operationId: listPlatsDashboard
+ *     responses:
+ *       200:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/SuccessPlatList'
  * /plats/{id}:
  *   get:
  *     tags: [Plats]
@@ -139,6 +150,7 @@ export const platsRouter = Router();
  */
 platsRouter.get("/", asyncHandler(platsController.list));
 platsRouter.get("/all", asyncHandler(platsController.listAll));
+platsRouter.get("/dashboard", asyncHandler(platsController.listAll));
 platsRouter.get("/user/:userId", asyncHandler(platsController.listByUser));
 platsRouter.post(
   "/:id/image",
