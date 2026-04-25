@@ -9,50 +9,48 @@ datasource db {
 
 /// Compte application : client, gérant de maquis, ou admin plateforme
 model User {
-  id             String   @id @default(cuid())
-  email          String   @unique
-  telephone      String?  @unique
-  motDePasseHash String?  @map("mot_de_passe_hash")
-  emailVerificationCode      String?   @map("email_verification_code")
-  emailVerificationExpiresAt DateTime? @map("email_verification_expires_at")
-  emailVerifiedAt            DateTime? @map("email_verified_at")
-  nom            String
-  prenom         String?
-  role           Role     @default(CLIENT)
+  id                         String       @id @default(cuid())
+  email                      String       @unique
+  telephone                  String?      @unique
+  motDePasseHash             String?      @map("mot_de_passe_hash")
+  nom                        String
+  prenom                     String?
+  role                       Role         @default(CLIENT)
   /// Renseigné si l’utilisateur est employé / second gérant rattaché à un maquis
-  maquisId       String?  @map("maquis_id")
-  actif          Boolean  @default(true)
-  isComplete     Boolean  @default(false) @map("is_complete")
-  createdAt      DateTime @default(now()) @map("created_at")
-  updatedAt      DateTime @updatedAt @map("updated_at")
-
-  maquisEmployeur Maquis?   @relation("EmployesMaquis", fields: [maquisId], references: [id])
-  maquisPossedes  Maquis[]  @relation("ProprietaireMaquis")
-  commandes       Commande[]
-  historiques     Historique[]
+  maquisId                   String?      @map("maquis_id")
+  actif                      Boolean      @default(true)
+  createdAt                  DateTime     @default(now()) @map("created_at")
+  updatedAt                  DateTime     @updatedAt @map("updated_at")
+  isComplete                 Boolean      @default(false) @map("is_complete")
+  emailVerificationCode      String?      @map("email_verification_code")
+  emailVerificationExpiresAt DateTime?    @map("email_verification_expires_at")
+  emailVerifiedAt            DateTime?    @map("email_verified_at")
+  commandes                  Commande[]
+  historiques                Historique[]
+  maquisPossedes             Maquis[]     @relation("ProprietaireMaquis")
+  maquisEmployeur            Maquis?      @relation("EmployesMaquis", fields: [maquisId], references: [id])
 
   @@map("users")
 }
 
 /// Point de vente type maquis / attiéké-garba (nom, lieu, horaires implicites côté métier)
 model Maquis {
-  id          String   @id @default(cuid())
-  nom         String
-  description String?
-  adresse     String
-  ville       String?
-  telephone   String?
-  imageUrl    String?  @map("image_url")
-  ouvert      Boolean  @default(true)
-  proprietaireId String @map("proprietaire_id")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
-
-  proprietaire User       @relation("ProprietaireMaquis", fields: [proprietaireId], references: [id])
-  employes     User[]     @relation("EmployesMaquis")
-  plats        Plat[]
-  commandes    Commande[]
-  historiques     Historique[]
+  id             String       @id @default(cuid())
+  nom            String
+  description    String?
+  adresse        String
+  ville          String?
+  telephone      String?
+  imageUrl       String?      @map("image_url")
+  ouvert         Boolean      @default(true)
+  proprietaireId String       @map("proprietaire_id")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+  commandes      Commande[]
+  historiques    Historique[]
+  proprietaire   User         @relation("ProprietaireMaquis", fields: [proprietaireId], references: [id])
+  plats          Plat[]
+  employes       User[]       @relation("EmployesMaquis")
 
   @@index([proprietaireId])
   @@map("maquis")
@@ -60,19 +58,19 @@ model Maquis {
 
 /// Plat vendu (garba, attiéké, alloco, etc.) — rattaché à un seul maquis
 model Plat {
-  id          String   @id @default(cuid())
-  maquisId    String   @map("maquis_id")
-  nom         String
-  description String?
-  prix        Decimal  @db.Decimal(10, 2)
-  imageUrl    String?  @map("image_url")
-  disponible  Boolean  @default(true)
-  supplements String[] @default([])
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  id             String          @id @default(cuid())
+  maquisId       String          @map("maquis_id")
+  nom            String
+  description    String?
+  prix           Decimal         @db.Decimal(10, 2)
+  imageUrl       String?         @map("image_url")
+  disponible     Boolean         @default(true)
+  supplements    String[]        @default([])
 
-  maquis           Maquis          @relation(fields: [maquisId], references: [id], onDelete: Cascade)
-  lignesCommande   LigneCommande[]
+  createdAt      DateTime        @default(now()) @map("created_at")
+  updatedAt      DateTime        @updatedAt @map("updated_at")
+  lignesCommande LigneCommande[]
+  maquis         Maquis          @relation(fields: [maquisId], references: [id], onDelete: Cascade)
 
   @@index([maquisId])
   @@map("plats")
@@ -80,21 +78,20 @@ model Plat {
 
 /// Commande passée par un client auprès d’un maquis
 model Commande {
-  id           String          @id @default(cuid())
-  userId       String          @map("user_id")
-  maquisId     String          @map("maquis_id")
-  statut        StatutCommande   @default(EN_ATTENTE)
+  id            String          @id @default(cuid())
+  userId        String          @map("user_id")
+  maquisId      String          @map("maquis_id")
+  statut        StatutCommande  @default(EN_ATTENTE)
   moyenPaiement MoyenDePaiement @default(ESPECES) @map("moyen_paiement")
   /// Total payé / attendu (souvent recalculé à partir des lignes, conservé pour l’historique)
-  montantTotal Decimal         @map("montant_total") @db.Decimal(10, 2)
-  commentaire  String?         @map("commentaire")
-  createdAt    DateTime        @default(now()) @map("created_at")
-  updatedAt    DateTime        @updatedAt @map("updated_at")
-
-  user    User            @relation(fields: [userId], references: [id], onDelete: Restrict)
-  maquis  Maquis          @relation(fields: [maquisId], references: [id], onDelete: Restrict)
-  lignes  LigneCommande[]
-  historiques     Historique[]
+  montantTotal  Decimal         @map("montant_total") @db.Decimal(10, 2)
+  commentaire   String?         @map("commentaire")
+  createdAt     DateTime        @default(now()) @map("created_at")
+  updatedAt     DateTime        @updatedAt @map("updated_at")
+  maquis        Maquis          @relation(fields: [maquisId], references: [id])
+  user          User            @relation(fields: [userId], references: [id])
+  historiques   Historique[]
+  lignes        LigneCommande[]
 
   @@index([userId])
   @@index([maquisId])
@@ -104,18 +101,36 @@ model Commande {
 
 /// Détail d’une commande : plat, quantité, prix unitaire au moment de la commande
 model LigneCommande {
-  id             String   @id @default(cuid())
-  commandeId     String   @map("commande_id")
-  platId         String   @map("plat_id")
-  quantite       Int      @default(1)
-  prixUnitaire   Decimal  @map("prix_unitaire") @db.Decimal(10, 2)
-
-  commande Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
-  plat     Plat     @relation(fields: [platId], references: [id], onDelete: Restrict)
+  id           String   @id @default(cuid())
+  commandeId   String   @map("commande_id")
+  platId       String   @map("plat_id")
+  quantite     Int      @default(1)
+  prixUnitaire Decimal  @map("prix_unitaire") @db.Decimal(10, 2)
+  commande     Commande @relation(fields: [commandeId], references: [id], onDelete: Cascade)
+  plat         Plat     @relation(fields: [platId], references: [id])
 
   @@index([commandeId])
   @@index([platId])
   @@map("lignes_commande")
+}
+
+/// Historique des actions (commandes, utilisateurs, maquis, etc.)
+model Historique {
+  id         String    @id @default(cuid())
+  userId     String?   @map("user_id")
+  commandeId String?   @map("commande_id")
+  maquisId   String?   @map("maquis_id")
+  action     String
+  details    String?
+  createdAt  DateTime  @default(now()) @map("created_at")
+  commande   Commande? @relation(fields: [commandeId], references: [id])
+  maquis     Maquis?   @relation(fields: [maquisId], references: [id])
+  user       User?     @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([commandeId])
+  @@index([maquisId])
+  @@map("historiques")
 }
 
 enum Role {
@@ -140,24 +155,4 @@ enum MoyenDePaiement {
   WAVE
   CARTE_BANCAIRE
   AUTRE
-}
-
-/// Historique des actions (commandes, utilisateurs, maquis, etc.)
-model Historique {
-  id          String   @id @default(cuid())
-  userId      String?  @map("user_id")   // qui a fait l’action
-  commandeId  String?  @map("commande_id")
-  maquisId    String?  @map("maquis_id")
-  action      String   // description de l’action (ex: "Création commande", "Modification profil")
-  details     String?  // infos complémentaires
-  createdAt   DateTime @default(now()) @map("created_at")
-
-  user     User?     @relation(fields: [userId], references: [id], onDelete: SetNull)
-  commande Commande? @relation(fields: [commandeId], references: [id], onDelete: SetNull)
-  maquis   Maquis?   @relation(fields: [maquisId], references: [id], onDelete: SetNull)
-
-  @@index([userId])
-  @@index([commandeId])
-  @@index([maquisId])
-  @@map("historiques")
 }

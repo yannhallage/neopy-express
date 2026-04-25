@@ -20,6 +20,10 @@ CREATE TABLE "users" (
     "actif" BOOLEAN NOT NULL DEFAULT true,
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
+    "is_complete" BOOLEAN NOT NULL DEFAULT false,
+    "email_verification_code" TEXT,
+    "email_verification_expires_at" TIMESTAMP(3),
+    "email_verified_at" TIMESTAMP(3),
 
     CONSTRAINT "users_pkey" PRIMARY KEY ("id")
 );
@@ -50,6 +54,7 @@ CREATE TABLE "plats" (
     "prix" DECIMAL(10,2) NOT NULL,
     "image_url" TEXT,
     "disponible" BOOLEAN NOT NULL DEFAULT true,
+    "supplements" TEXT[] DEFAULT ARRAY[]::TEXT[],
     "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMP(3) NOT NULL,
 
@@ -82,6 +87,19 @@ CREATE TABLE "lignes_commande" (
     CONSTRAINT "lignes_commande_pkey" PRIMARY KEY ("id")
 );
 
+-- CreateTable
+CREATE TABLE "historiques" (
+    "id" TEXT NOT NULL,
+    "user_id" TEXT,
+    "commande_id" TEXT,
+    "maquis_id" TEXT,
+    "action" TEXT NOT NULL,
+    "details" TEXT,
+    "created_at" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+    CONSTRAINT "historiques_pkey" PRIMARY KEY ("id")
+);
+
 -- CreateIndex
 CREATE UNIQUE INDEX "users_email_key" ON "users"("email");
 
@@ -109,6 +127,15 @@ CREATE INDEX "lignes_commande_commande_id_idx" ON "lignes_commande"("commande_id
 -- CreateIndex
 CREATE INDEX "lignes_commande_plat_id_idx" ON "lignes_commande"("plat_id");
 
+-- CreateIndex
+CREATE INDEX "historiques_user_id_idx" ON "historiques"("user_id");
+
+-- CreateIndex
+CREATE INDEX "historiques_commande_id_idx" ON "historiques"("commande_id");
+
+-- CreateIndex
+CREATE INDEX "historiques_maquis_id_idx" ON "historiques"("maquis_id");
+
 -- AddForeignKey
 ALTER TABLE "users" ADD CONSTRAINT "users_maquis_id_fkey" FOREIGN KEY ("maquis_id") REFERENCES "maquis"("id") ON DELETE SET NULL ON UPDATE CASCADE;
 
@@ -119,13 +146,22 @@ ALTER TABLE "maquis" ADD CONSTRAINT "maquis_proprietaire_id_fkey" FOREIGN KEY ("
 ALTER TABLE "plats" ADD CONSTRAINT "plats_maquis_id_fkey" FOREIGN KEY ("maquis_id") REFERENCES "maquis"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "commandes" ADD CONSTRAINT "commandes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "commandes" ADD CONSTRAINT "commandes_maquis_id_fkey" FOREIGN KEY ("maquis_id") REFERENCES "maquis"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "commandes" ADD CONSTRAINT "commandes_maquis_id_fkey" FOREIGN KEY ("maquis_id") REFERENCES "maquis"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+ALTER TABLE "commandes" ADD CONSTRAINT "commandes_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "lignes_commande" ADD CONSTRAINT "lignes_commande_commande_id_fkey" FOREIGN KEY ("commande_id") REFERENCES "commandes"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
 ALTER TABLE "lignes_commande" ADD CONSTRAINT "lignes_commande_plat_id_fkey" FOREIGN KEY ("plat_id") REFERENCES "plats"("id") ON DELETE RESTRICT ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "historiques" ADD CONSTRAINT "historiques_commande_id_fkey" FOREIGN KEY ("commande_id") REFERENCES "commandes"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "historiques" ADD CONSTRAINT "historiques_maquis_id_fkey" FOREIGN KEY ("maquis_id") REFERENCES "maquis"("id") ON DELETE SET NULL ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "historiques" ADD CONSTRAINT "historiques_user_id_fkey" FOREIGN KEY ("user_id") REFERENCES "users"("id") ON DELETE SET NULL ON UPDATE CASCADE;
