@@ -35,6 +35,11 @@ export function createApp(): express.Application {
     [
       ...fromEnv(process.env.FRONTEND_URL),
       ...fromEnv(process.env.REACT_APP_URL),
+      // Liste des origines autorisées pour CORS :
+      // - http://localhost:5173 et http://127.0.0.1:5173 : développement local (Vite front-end)
+      // - http://localhost:3000 et http://127.0.0.1:3000 : développement local (React ou autres apps front-end)
+      // - http://127.0.0.1:4000 et http://localhost:4000 : accès API en local sur différents ports
+      // - https://neo-ga.vercel.app : déploiement de l'application front-end en production sur Vercel
       "http://localhost:5173",
       "http://127.0.0.1:5173",
       "http://localhost:3000",
